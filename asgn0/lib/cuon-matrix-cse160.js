@@ -48,6 +48,8 @@ class Vector3 {
         // This function should change this vector (this.elements) and not create a new vector.
 
         // Don't delete the return statement.
+        this.elements[0]+=oher.elements[0];
+        this.elements[1]+=other.elements[1];
         return this;
     };
 
@@ -60,6 +62,8 @@ class Vector3 {
         // This function should change this vector (this.elements) and not create a new vector.
 
         // Don't delete the return statement.
+        this.elements[0]-=this.elements[0];
+        this.elements[1]-=this.elements[1];
         return this;
     };
 
@@ -72,6 +76,8 @@ class Vector3 {
         // This function should change this vector (this.elements) and not create a new vector.
 
         // Don't delete the return statement.
+        this.elements[0]*=scalar;
+        this.elements[1]*=scalar;
         return this;
     };
 
@@ -84,6 +90,8 @@ class Vector3 {
         // This function should change this vector (this.elements) and not create a new vector.
 
         // Don't delete the return statement.
+        this.elements[0]*=scalar;
+        this.elements[1]*=scalar;
         return this;
     };
 
@@ -94,7 +102,10 @@ class Vector3 {
     static dot(other1, other2) {
         // Insert your code here.
         let d = 0; // Modify this line to calculate this vector's magnitude.
-
+        var i;
+        for(i=0;i<3;++i){
+          d+=(other1.elements[i]*other2.elements[i]);
+        }
         // Don't delete the return statement.
         return d;
     }
@@ -119,7 +130,7 @@ class Vector3 {
     magnitude() {
         // Insert your code here.
         let m = 0; // Modify this line to calculate this vector's magnitude.
-
+        m=Math.sqrt(this.elements[0]*this.elements[0]+this.elements[1]*this.elements[1]);
         // Don't delete the return statement.
         return m;
     };
@@ -131,7 +142,9 @@ class Vector3 {
     normalize() {
         // Insert your code here.
         // This function should change this vector (this.elements) and not create a new vector.
-
+        let mag=this.magnitude();
+        this.elements[0]/=mag;
+        this.elements[1]/=mag;
         // Don't delete the return statement.
         return this;
     };

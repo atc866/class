@@ -33,27 +33,42 @@ function handleDrawEvent(){
     let scalar=Number(document.getElementById("scalar").value);
     if(op==="add"){
         console.log("add");
-        v3=new Vector3([v1x+v2x,v1y+v2y,0]);
-        console.log(v1x,v2x,v1y,v2y);
-        console.log(v1x+v2x);
-        console.log(v1y+v2y);
+        v3=new Vector3();
+        v3.set(v1.add(v2));
         drawVector(v3,"green");
     }
     else if(op==="sub"){
-        v3=new Vector3([v1x-v2x,v1y-v2y,0]);
+        v3=new Vector3();
+        v3.set(v1.sub(v2));
         drawVector(v3,"green");
     }
     else if(op==="div"){
-        v3=new Vector3([v1x/scalar,v1y/scalar,0]);
+        v3=new Vector3();
+        v4=new Vector3();
+        v3.set(v1.div(scalar));
+        v4.set(v2.div(scalar));
         drawVector(v3,"green");
-        v4=new Vector3([v2x/scalar,v2y/scalar,0]);
         drawVector(v4,"green");
     }
     else if(op==="mul"){
-        v3=new Vector3([v1x*scalar,v1y*scalar,0]);
+        v3=new Vector3();
+        v4=new Vector3();
+        v3.set(v1.mul(scalar));
+        v4.set(v2.mul(scalar));
         drawVector(v3,"green");
-        v4=new Vector3([v2x*scalar,v2y*scalar,0]);
         drawVector(v4,"green");
+        
+    }
+    else if (op==="mag"){
+        console.log("v1 magnitude:"+v1.magnitude());
+        console.log("v2 magnitude:"+v2.magnitude());
+    }
+    else if(op==="norm"){
+        drawVector(v1.normalize(),"green");
+        drawVector(v2.normalize(),"green");
+    }
+    else if(op=="angbtwn"){
+        console.log("Angle:"+angleBetween(v1,v2));
     }
 }
 function drawVector(v,color){
@@ -62,4 +77,8 @@ function drawVector(v,color){
     ctx.moveTo(200,200);
     ctx.lineTo(200+v.elements[0]*20,200-v.elements[1]*20);
     ctx.stroke();
+}
+function angleBetween(vec1,vec2){
+    //get angle between from formula then convert to raddians
+    return (Math.acos(Vector3.dot(vec1,vec2)/(vec1.magnitude()*vec2.magnitude()))*(180/Math.PI));
 }
