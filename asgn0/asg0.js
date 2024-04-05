@@ -70,6 +70,9 @@ function handleDrawEvent(){
     else if(op=="angbtwn"){
         console.log("Angle:"+angleBetween(v1,v2));
     }
+    else if(op=="area"){
+        console.log("Area:"+areaTriangle(v1,v2));
+    }
 }
 function drawVector(v,color){
     ctx.strokeStyle=color;
@@ -81,4 +84,8 @@ function drawVector(v,color){
 function angleBetween(vec1,vec2){
     //get angle between from formula then convert to raddians
     return (Math.acos(Vector3.dot(vec1,vec2)/(vec1.magnitude()*vec2.magnitude()))*(180/Math.PI));
+}
+
+function areaTriangle(vec1,vec2){
+    return 0.5*(Vector3.cross(vec1,vec2).magnitude());
 }

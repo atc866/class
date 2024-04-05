@@ -48,8 +48,9 @@ class Vector3 {
         // This function should change this vector (this.elements) and not create a new vector.
 
         // Don't delete the return statement.
-        this.elements[0]+=oher.elements[0];
+        this.elements[0]+=other.elements[0];
         this.elements[1]+=other.elements[1];
+        this.elements[2]+=other.elements[2];
         return this;
     };
 
@@ -62,8 +63,9 @@ class Vector3 {
         // This function should change this vector (this.elements) and not create a new vector.
 
         // Don't delete the return statement.
-        this.elements[0]-=this.elements[0];
-        this.elements[1]-=this.elements[1];
+        this.elements[0]-=other.elements[0];
+        this.elements[1]-=other.elements[1];
+        this.elements[2]-=other.elements[2];
         return this;
     };
 
@@ -76,8 +78,9 @@ class Vector3 {
         // This function should change this vector (this.elements) and not create a new vector.
 
         // Don't delete the return statement.
-        this.elements[0]*=scalar;
-        this.elements[1]*=scalar;
+        this.elements[0]/=scalar;
+        this.elements[1]/=scalar;
+        this.elements[2]/=scalar;
         return this;
     };
 
@@ -92,6 +95,7 @@ class Vector3 {
         // Don't delete the return statement.
         this.elements[0]*=scalar;
         this.elements[1]*=scalar;
+        this.elements[2]*=scalar;
         return this;
     };
 
@@ -117,8 +121,11 @@ class Vector3 {
     static cross(other1, other2) {
         // Insert your code here.
         // This function should create and return a new vector.
-        let v3 = new Vector3(); // Modify this line to calculate cross product between other1 and other2.
-
+        let v3 = new Vector3(
+        [(other1.elements[1]*other2.elements[2]-other1.elements[2]*other2.elements[1]),
+        (other1.elements[2]*other2.elements[0]-other1.elements[0]*other2.elements[2]),
+        (other1.elements[0]*other2.elements[1]-other1.elements[1]*other2.elements[0])]); // Modify this line to calculate cross product between other1 and other2.\
+        
         // Don't delete the return statement.
         return v3;
     }
@@ -130,7 +137,7 @@ class Vector3 {
     magnitude() {
         // Insert your code here.
         let m = 0; // Modify this line to calculate this vector's magnitude.
-        m=Math.sqrt(this.elements[0]*this.elements[0]+this.elements[1]*this.elements[1]);
+        m=Math.sqrt(this.elements[0]*this.elements[0]+this.elements[1]*this.elements[1]+this.elements[2]*this.elements[2]);
         // Don't delete the return statement.
         return m;
     };
@@ -145,6 +152,7 @@ class Vector3 {
         let mag=this.magnitude();
         this.elements[0]/=mag;
         this.elements[1]/=mag;
+        this.elements[2]/=mag;
         // Don't delete the return statement.
         return this;
     };
