@@ -19,6 +19,7 @@ function setupWebGL(){
 
   // Get the rendering context for WebGL
   gl = getWebGLContext(canvas,{preserveDrawingBuffer: true});
+  gl.globalAlpha=0.5;
   if (!gl) {
     console.log('Failed to get the rendering context for WebGL');
     return;
@@ -58,6 +59,7 @@ let g_selectedColor=[1.0,1.0,1.0,1.0];
 let g_selectedSize=5;
 let g_selectedType=POINT;
 let g_circlesSegmentCount=10;
+var fileuploaded;
 //set up actions for the html ui elements
 function addActionForHtmlUI(){
   
@@ -86,7 +88,7 @@ function main() {
   canvas.onmousemove=function(ev){if(ev.buttons==1)click(ev)};
 
   // Specify the color for clearing <canvas>
-  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  gl.clearColor(0, 0, 0, 0.1);
 
   // Clear <canvas>
   gl.clear(gl.COLOR_BUFFER_BIT);
@@ -113,7 +115,6 @@ function click(ev) {
   }
   else{
     point=new Circle();
-    point.segments=g_circlesSegmentCount;
   }
   point.position=[x,y];
   point.color=g_selectedColor.slice();
