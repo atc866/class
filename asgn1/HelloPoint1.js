@@ -54,8 +54,9 @@ function connectVariablesToGLSL(){
 const POINT=0;
 const TRIANGLE=1;
 const CIRCLE=2;
+const KOBE=3;
 //global related to UI
-let g_selectedColor=[1.0,1.0,1.0,1.0];
+let g_selectedColor=[0,0,0,1.0];
 let g_selectedSize=5;
 let g_selectedType=POINT;
 let g_circlesSegmentCount=10;
@@ -69,6 +70,7 @@ function addActionForHtmlUI(){
   document.getElementById('pointButton').onclick=function(){g_selectedType=POINT};
   document.getElementById('triButton').onclick=function(){g_selectedType=TRIANGLE};
   document.getElementById('circleButton').onclick=function(){g_selectedType=CIRCLE};
+  document.getElementById('kobeButton').onclick=function(){g_selectedType=KOBE};
   document.getElementById('redSlide').addEventListener('mouseup',function(){g_selectedColor[0]=this.value/100});
   document.getElementById('greenSlide').addEventListener('mouseup',function(){g_selectedColor[1]=this.value/100});
   document.getElementById('blueSlide').addEventListener('mouseup',function(){g_selectedColor[2]=this.value/100});
@@ -88,7 +90,7 @@ function main() {
   canvas.onmousemove=function(ev){if(ev.buttons==1)click(ev)};
 
   // Specify the color for clearing <canvas>
-  gl.clearColor(0, 0, 0, 0.1);
+  gl.clearColor(0, 0, 0, 0.05);
 
   // Clear <canvas>
   gl.clear(gl.COLOR_BUFFER_BIT);
@@ -113,8 +115,13 @@ function click(ev) {
   else if (g_selectedType==TRIANGLE){
     point=new Triangle();
   }
-  else{
+  else if(g_selectedType==CIRCLE){
     point=new Circle();
+    point.segments=g_circlesSegmentCount;
+
+  }
+  else{
+    point=new Kobe();
   }
   point.position=[x,y];
   point.color=g_selectedColor.slice();
