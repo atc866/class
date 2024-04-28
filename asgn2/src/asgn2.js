@@ -16,19 +16,6 @@ let u_ModelMatrix;
 let u_GlobalRotateMatrix;
 
 
-function setupWebGL(){
-  // Retrieve <canvas> element
-  canvas = document.getElementById('webgl');
-
-  // Get the rendering context for WebGL
-  gl = getWebGLContext(canvas,{preserveDrawingBuffer: true});
-  gl.globalAlpha=0.5;
-  if (!gl) {
-    console.log('Failed to get the rendering context for WebGL');
-    return;
-  }
-  gl.enable(gl.DEPTH_TEST);
-}
 function connectVariablesToGLSL(){
    // Initialize shaders
    if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
@@ -79,6 +66,10 @@ let g_yellowAngle=0;
 let g_magentaAngle=0;
 let g_yellowAnimation=false;
 let g_magentaAnimation=false;
+let g_globalXAngle=0;
+let g_globalYAngle=0;
+let g_globalZAngle=0;
+let g_origin=[0,0];
 //set up actions for the html ui elements
 function addActionForHtmlUI(){
   document.getElementById('animationMagentaOffButton').onclick=function(){g_magentaAnimation=false};
@@ -92,16 +83,41 @@ function addActionForHtmlUI(){
 } 
 
 
+//performancce optimization stuff taken from hall of fame
+//https://people.ucsc.edu/~adion/Andre_Dion_Assignment_2/asg2.html
+function setupBuffer(){
+  vertexBuffer = gl.createBuffer();
+  if (!vertexBuffer) {
+    console.log('Failed to create the buffer object');
+    return -1;
+  }
+  // Bind the buffer object to target
+  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+  // Assign the buffer object to a_Position variable
+  gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0);
+}
+
+function setUpWebGL() {
+    canvas = document.getElementById('webgl');
+    gl = canvas.getContext("webgl", { preserveDrawingBuffer: true});
+    if (!gl) {
+        console.log('Failed to get the rendering context for WebGL');
+        return;
+    }
+    gl.enable(gl.DEPTH_TEST);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+}
+
 
 function main() {
 
-  setupWebGL();
+  setUpWebGL();
+  setupBuffer();
   connectVariablesToGLSL();
   addActionForHtmlUI();
   // Register function (event handler) to be called on a mouse press
-  canvas.onmousedown = click;
+  canvas.onmousedown = origin;
   canvas.onmousemove=function(ev){if(ev.buttons==1)click(ev)};
-
   // Specify the color for clearing <canvas>
   gl.clearColor(0, 0, 0, 1.0);
 
@@ -112,6 +128,8 @@ function main() {
 }
 var g_startTime=performance.now()/1000.0;
 var g_seconds=performance.now()/1000.0-g_startTime;
+
+
 function tick(){
   g_seconds=performance.now()/1000.0-g_startTime;
   updateAnimationAngles();
@@ -133,32 +151,25 @@ function updateAnimationAngles(){
 //var g_sizes=[];
 
 
-var g_shapesList=[];
+//var g_shapesList=[];\
+
+
+//camaera stuff with mouse from https://people.ucsc.edu/~jrgu/asg2/blockyAnimal/BlockyAnimal.html
+function origin(ev) {
+  var x = ev.clientX;
+  var y = ev.clientY;
+  g_origin = [x, y];
+}
+
 function click(ev) {
 
   // extract the event click and return webgl coordinates
   let [x,y]=convertCoordinatesEventToGL(ev);
-
-  //store coordinates to array
-  let point;
-  if(g_selectedType==POINT){
-    point=new Point();
+  g_globalXAngle = g_globalXAngle-x*360
+  g_globalYAngle = g_globalYAngle-y*360
+  renderAllShapes();
   }
-  else if (g_selectedType==TRIANGLE){
-    point=new Triangle();
-  }
-  else if(g_selectedType==CIRCLE){
-    point=new Circle();
-    point.segments=g_circlesSegmentCount;
-
-  }
-  else{
-    point=new Kobe();
-  }
-  point.position=[x,y];
-  point.color=g_selectedColor.slice();
-  point.size=g_selectedSize;
-  g_shapesList.push(point);
+  
 
 
   //g_colors.push(g_selectedColor.slice());
@@ -173,25 +184,27 @@ function click(ev) {
  // }
   
   //draw every shape that is supposed to be on canvas
-  renderAllShapes();
-  
-}
+  //renderAllShapes();
 
 
 //extract even click and return to webgl coordinates
 function convertCoordinatesEventToGL(ev){
   var x = ev.clientX; // x coordinate of a mouse pointer
   var y = ev.clientY; // y coordinate of a mouse pointer
-  var rect = ev.target.getBoundingClientRect();
-
-  x = ((x - rect.left) - canvas.width/2)/(canvas.width/2);
-  y = (canvas.height/2 - (y - rect.top))/(canvas.height/2);
-  return ([x,y]);
+  let temp = [x,y];
+  x = (x - g_origin[0])/400;
+  y = (y - g_origin[1])/400;
+  g_origin = temp;
+  return([x,y])
 }
 
 function renderAllShapes(){
-  gl.clear(gl.COLOR_BUFFER_BIT);
+  var startTime = performance.now();
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   var globalRotMat=new Matrix4().rotate(g_globalAngle,0,1,0);
+  globalRotMat.rotate(g_globalXAngle,0,1,0);
+  globalRotMat.rotate(-g_globalYAngle,1,0,0);
+  globalRotMat.rotate(g_globalZAngle,0,0,1);
   gl.uniformMatrix4fv(u_GlobalRotateMatrix,false,globalRotMat.elements);
 
   // var len = g_shapesList.length;
@@ -234,7 +247,19 @@ function renderAllShapes(){
   box.matrix.translate(-0.5,0,-0.001);
   box.render();
 
+  var duration = performance.now() - startTime;
+  sentTextToHTML("ms: " + Math.floor(duration) + " fps: " + Math.floor(1000/duration), "numdot");
+
 
   
 
+}
+
+function sentTextToHTML(text, htmlID) {
+  var htmlElm = document.getElementById(htmlID);
+  if(!htmlElm) {
+      console.log("Failed to get " + htmlID + "from HTML");
+      return;
+  }
+  htmlElm.innerHTML = text;
 }
