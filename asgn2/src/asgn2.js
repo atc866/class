@@ -376,7 +376,7 @@ function renderAllShapes(){
   
 
 }
-
+//source from https://people.ucsc.edu/~adion/Andre_Dion_Assignment_2/asg2.html
 function sentTextToHTML(text, htmlID) {
   var htmlElm = document.getElementById(htmlID);
   if(!htmlElm) {
