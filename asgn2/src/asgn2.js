@@ -62,22 +62,45 @@ let g_selectedType=POINT;
 let g_circlesSegmentCount=10;
 var fileuploaded;
 let g_globalAngle=0;
-let g_yellowAngle=0;
-let g_magentaAngle=0;
-let g_yellowAnimation=false;
-let g_magentaAnimation=false;
+let g_leg1angle=0;
+let g_leg2angle=0;
+let g_yellowAnimation=true;
+let g_magentaAnimation=true;
 let g_globalXAngle=0;
 let g_globalYAngle=0;
 let g_globalZAngle=0;
 let g_origin=[0,0];
+let g_wing1angle=0;
+let g_wing2angle=0;
+let g_feet1angle=0;
+let g_feet2angle=0;
+let g_s1angle=0;
+let g_s2angle=0;
+let g_hatangle=0;
+let g_hatanimation=true;
+let g_wing1animation=false;
+let g_wing2animation=false;
 //set up actions for the html ui elements
 function addActionForHtmlUI(){
   document.getElementById('animationMagentaOffButton').onclick=function(){g_magentaAnimation=false};
   document.getElementById('animationMagentaOnButton').onclick=function(){g_magentaAnimation=true};
   document.getElementById('animationYellowOffButton').onclick=function(){g_yellowAnimation=false};
   document.getElementById('animationYellowOnButton').onclick=function(){g_yellowAnimation=true};
-  document.getElementById('magentaSlide').addEventListener('mousemove',function(){g_magentaAngle=this.value; renderAllShapes();});
-  document.getElementById('yellowSlide').addEventListener('mousemove',function(){g_yellowAngle=this.value; renderAllShapes();});
+  document.getElementById('animationwing1OnButton').onclick=function(){g_wing1animation=true};
+  document.getElementById('animationwing1OffButton').onclick=function(){g_wing1animation=false};
+  document.getElementById('animationwing2OnButton').onclick=function(){g_wing2animation=true};
+  document.getElementById('animationwing2OffButton').onclick=function(){g_wing2animation=false};
+  document.getElementById('animationhatOnButton').onclick=function(){g_hatanimation=true};
+  document.getElementById('animationhatOffButton').onclick=function(){g_hatanimation=false};
+  document.getElementById('magentaSlide').addEventListener('mousemove',function(){g_leg2angle=this.value; renderAllShapes();});
+  document.getElementById('yellowSlide').addEventListener('mousemove',function(){g_leg1angle=this.value; renderAllShapes();});
+  document.getElementById('wing1Slide').addEventListener('mousemove',function(){g_wing1angle=this.value; renderAllShapes();});
+  document.getElementById('wing2Slide').addEventListener('mousemove',function(){g_wing2angle=this.value; renderAllShapes();});
+  document.getElementById('feet1Slide').addEventListener('mousemove',function(){g_feet1angle=this.value; renderAllShapes();});
+  document.getElementById('feet2Slide').addEventListener('mousemove',function(){g_feet2angle=this.value; renderAllShapes();});
+  document.getElementById('s1Slide').addEventListener('mousemove',function(){g_s1angle=this.value; renderAllShapes();});
+  document.getElementById('s2Slide').addEventListener('mousemove',function(){g_s2angle=this.value; renderAllShapes();});
+  document.getElementById('hatSlide').addEventListener('mousemove',function(){g_hatangle=this.value; renderAllShapes();});
   document.getElementById('angleSlide').addEventListener('mousemove',function(){g_globalAngle=this.value; renderAllShapes();});
   //document.getElementById('segSlide').addEventListener('mouseup',function(){g_circlesSegmentCount=this.value});
 } 
@@ -116,6 +139,11 @@ function main() {
   connectVariablesToGLSL();
   addActionForHtmlUI();
   // Register function (event handler) to be called on a mouse press
+  canvas.onclick=function(ev){if(ev.shiftKey){
+    console.log("pressed shift")
+    g_wing1animation=true;
+    g_wing2animation=true;
+  }};
   canvas.onmousedown = origin;
   canvas.onmousemove=function(ev){if(ev.buttons==1)click(ev)};
   // Specify the color for clearing <canvas>
@@ -130,6 +158,7 @@ var g_startTime=performance.now()/1000.0;
 var g_seconds=performance.now()/1000.0-g_startTime;
 
 
+
 function tick(){
   g_seconds=performance.now()/1000.0-g_startTime;
   updateAnimationAngles();
@@ -139,10 +168,19 @@ function tick(){
 
 function updateAnimationAngles(){
   if(g_yellowAnimation){
-    g_yellowAngle=(45*Math.sin(g_seconds));
+    g_leg1angle=(45*Math.sin(5*g_seconds));
   }
   if(g_magentaAnimation){
-    g_magentaAngle=(45*Math.sin(3*g_seconds));
+    g_leg2angle=(-45*Math.sin(5*g_seconds));
+  }
+  if(g_wing1animation){
+    g_wing1angle=(25*Math.sin(5*g_seconds)+20);
+  }
+  if(g_wing2animation){
+    g_wing2angle=(25*Math.sin(5*g_seconds)+20);
+  }
+  if(g_hatanimation){
+    g_hatangle=(90*g_seconds);
   }
 }
 
@@ -154,7 +192,7 @@ function updateAnimationAngles(){
 //var g_shapesList=[];\
 
 
-//camaera stuff with mouse from https://people.ucsc.edu/~jrgu/asg2/blockyAnimal/BlockyAnimal.html
+//camaera stuff with mouse taken from https://people.ucsc.edu/~jrgu/asg2/blockyAnimal/BlockyAnimal.html in halloffame
 function origin(ev) {
   var x = ev.clientX;
   var y = ev.clientY;
@@ -162,11 +200,11 @@ function origin(ev) {
 }
 
 function click(ev) {
-
+  
   // extract the event click and return webgl coordinates
   let [x,y]=convertCoordinatesEventToGL(ev);
-  g_globalXAngle = g_globalXAngle-x*360
-  g_globalYAngle = g_globalYAngle-y*360
+  g_globalXAngle=g_globalXAngle-x*360
+  g_globalYAngle=g_globalYAngle-y*360
   renderAllShapes();
   }
   
@@ -215,37 +253,121 @@ function renderAllShapes(){
   
 
   var body=new Cube();
-  body.color=[1.0,0.0,0.0,1.0];
-  body.matrix.translate(-.25,-0.755,0.0);
-  body.matrix.rotate(-5,1,0,0);
-  body.matrix.scale(0.5,0.3,0.5);
+  body.color=[1,1,1,1.0];
+  body.matrix.translate(-.25,-0.4,0.0);
+  //body.matrix.rotate(-5,1,0,0);
+  body.matrix.scale(0.5,0.4,0.4);
   body.render();
 
-  var leftArm=new Cube();
-  leftArm.color=[1,1,0,1];
-  leftArm.matrix.setTranslate(0,-0.5,0.0);
-  leftArm.matrix.rotate(-5,1,0,0);
-  leftArm.matrix.rotate(-g_yellowAngle,0,0,1);
-  // if(g_yellowAnimation){
-  //   leftArm.matrix.rotate(45*Math.sin(g_seconds),0,0,1);
-  // }
-  // else{
-  //   leftArm.matrix.rotate(g_yellowAngle,0,0,1);
-  // }
-  var yellowCoordinatesMat=new Matrix4(leftArm.matrix);
-  leftArm.matrix.scale(0.25,0.7,0.5);
-  leftArm.matrix.translate(-0.5,0,0);
-  leftArm.render();
+  var head=new Cube();
+  head.color=[1,1,1,1.0];
+  head.matrix.translate(-0.35,-0.15,0.08);
+  head.matrix.scale(0.2,0.4,0.25);
+  head.render();
 
-  //test box
-  var box= new Cube();
-  box.color=[1,0,1,1];
-  box.matrix=yellowCoordinatesMat;
-  box.matrix.translate(0,0.65,0.0);
-  box.matrix.rotate(g_magentaAngle,0,0,1);
-  box.matrix.scale(0.3,0.3,0.3);
-  box.matrix.translate(-0.5,0,-0.001);
-  box.render();
+  var eye1=new Cube();
+  eye1.color=[0,0,0,1]
+  eye1.matrix.translate(-0.353,0.1,0.07);
+  eye1.matrix.scale(0.105,0.1,0.1);
+  eye1.render();
+
+  var eye2=new Cube();
+  eye2.color=[0,0,0,1]
+  eye2.matrix.translate(-0.353,0.1,0.25);
+  eye2.matrix.scale(0.105,0.1,0.1);
+  eye2.render();
+
+  var beak=new Cube();
+  beak.color=[238/255,210/255,2/255,1]
+  beak.matrix.translate(-0.45,-0.05,0.08);
+  beak.matrix.scale(0.1,0.15,0.25);
+  beak.render();
+
+  var redthing=new Cube();
+  redthing.color=[1,0,0,1];
+  redthing.matrix.translate(-0.45,-0.15,0.15);
+  redthing.matrix.scale(0.1,0.1,0.1);
+  redthing.render();
+
+  var wing1=new Cube();
+  wing1.color=[1,1,1,1.0];
+  wing1.matrix.rotate(180,1,0,0);
+  wing1.matrix.translate(-.2,0,0);
+  wing1.matrix.rotate(g_wing1angle,1,0,0);
+  wing1.matrix.scale(0.4,0.3,0.05);
+  wing1.render();
+  var wing2=new Cube();
+  wing2.color=[1,1,1,1.0];
+  wing2.matrix.rotate(180,1,0,0);
+  wing2.matrix.rotate(180,0,1,0);
+  wing2.matrix.translate(-.2,0,0.4);
+  wing2.matrix.rotate(g_wing2angle,1,0,0);
+  wing2.matrix.scale(0.4,0.3,0.05);
+  wing2.render();
+
+  var leg1=new Cube();
+  leg1.color=[241/255,235/255,156/255,1];
+  leg1.matrix.translate(0.05,-0.4,0.05);
+  leg1.matrix.rotate(180,0,0,1);
+  leg1.matrix.rotate(-g_leg1angle,0,0,1);
+  var leg1mat=new Matrix4(leg1.matrix);
+  leg1.matrix.scale(0.05,0.25,0.04);
+  leg1.render();
+  var leg2=new Cube();
+  leg2.color=[241/255,235/255,156/255,1];
+  leg2.matrix.translate(0.05,-0.4,0.3);
+  leg2.matrix.rotate(180,0,0,1);
+  leg2.matrix.rotate(-g_leg2angle,0,0,1);
+  var leg2mat=new Matrix4(leg2.matrix);
+  leg2.matrix.scale(0.05,0.25,0.04);
+  leg2.render();
+
+  var feet1=new Cube();
+  feet1.color=[241/255,235/255,156/255,1];
+  feet1.matrix=leg1mat;
+  feet1.matrix.translate(0,0.25,-0.02);
+  feet1.matrix.rotate(-g_feet1angle,0,0,1);
+  //body.matrix.rotate(-5,1,0,0);
+  var feet1mat=new Matrix4(feet1.matrix);
+  feet1.matrix.scale(0.1,0.01,0.1);
+  feet1.render();
+  var feet2=new Cube();
+  feet2.color=[241/255,235/255,156/255,1];
+  feet2.matrix=leg2mat;
+  feet2.matrix.translate(0,0.25,-0.02);
+  feet2.matrix.rotate(-g_feet2angle,0,0,1);
+  var feet2mat=new Matrix4(feet2.matrix);
+  //body.matrix.rotate(-5,1,0,0);
+  feet2.matrix.scale(0.1,0.01,0.1);
+  feet2.render();
+  
+  var hat=new Cone();
+  hat.color = [228/255,211/255,46/255,1];
+  hat.matrix.translate(-0.25, 0.25, 0.2);
+  hat.matrix.scale(0.6,0.2,0.6);
+  hat.matrix.rotate(270,1,0,0);
+  hat.matrix.rotate(g_hatangle,0,0,1);
+  hat.render();
+
+
+  var heelthing=new Cone();
+  heelthing.color=[0.5,0.5,0.5,1];
+  heelthing.matrix=feet2mat;
+  heelthing.matrix.translate(0.05, 0.01, 0.05);
+  heelthing.matrix.scale(0.05,0.25,0.05);
+  heelthing.matrix.rotate(270,1,0,0);
+  heelthing.matrix.rotate(g_s1angle,0,1,0);
+  heelthing.render();
+
+  var h=new Cone();
+  h.color=[0.5,0.5,0.5,1];
+  h.matrix=feet1mat;
+  h.matrix.translate(0.05, 0.01, 0.05);
+  h.matrix.scale(0.05,0.25,0.05);
+  h.matrix.rotate(270,1,0,0);
+  h.matrix.rotate(g_s2angle,0,1,0);
+  h.render();
+
 
   var duration = performance.now() - startTime;
   sentTextToHTML("ms: " + Math.floor(duration) + " fps: " + Math.floor(1000/duration), "numdot");
