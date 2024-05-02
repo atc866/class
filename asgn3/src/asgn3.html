@@ -1,0 +1,93 @@
+ <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="utf-8" />
+     <title>Draw a point (1)</title>
+   </head>
+    <body onload="main()">
+          
+          
+      <canvas class="canvas" id="webgl" width="400" height="400"></canvas>
+      <br>
+      <br>
+      <p id="numdot">XXX</p>
+      shiftclick for chicken to flap wings
+      <p>
+        <p>
+        leg2<input type="range" min="-45" max="45" value="0" class="slider" id="magentaSlide">
+        Animation:
+      <button type="button" id="animationMagentaOnButton">ON</button>
+      <button type="button" id="animationMagentaOffButton">OFF</button>
+        <p>
+        
+          leg1 <input type="range" min="-45" max="45" value="0" class="slider" id="yellowSlide">
+          Animation:
+      <button type="button" id="animationYellowOnButton">ON</button>
+      <button type="button" id="animationYellowOffButton">OFF</button>
+      <p>
+        <p>
+          
+          hat <input type="range" min="0" max="360" value="0" class="slider" id="hatSlide">
+          Animation:
+      <button type="button" id="animationhatOnButton">ON</button>
+      <button type="button" id="animationhatOffButton">OFF</button>
+        <p>
+          wing1<input type="range" min="0" max="90" value="0" class="slider" id="wing1Slide">
+          Animation:
+        <button type="button" id="animationwing1OnButton">ON</button>
+        <button type="button" id="animationwing1OffButton">OFF</button>
+          <p>
+          
+            wing2 <input type="range" min="0" max="90" value="0" class="slider" id="wing2Slide">
+            Animation:
+        <button type="button" id="animationwing2OnButton">ON</button>
+        <button type="button" id="animationwing2OffButton">OFF</button>
+
+        <p>
+          <p>
+            feet1<input type="range" min="-45" max="45" value="0" class="slider" id="feet1Slide">
+           
+            <p>
+            
+              feet2 <input type="range" min="-45" max="45" value="0" class="slider" id="feet2Slide">
+
+          <p>
+            spike1<input type="range" min="-45" max="45" value="0" class="slider" id="s1Slide">
+            
+            <p>
+            
+              spike2 <input type="range" min="-45" max="45" value="0" class="slider" id="s2Slide">
+        Camera <input type="range" min="0" max="360" value="0" class="slider" id="angleSlide">
+      </p>
+      <p>
+        
+      </p>
+      (Circles) Segment Count<input type="range" min="10" max="100" value="10" class="slider" id="segSlide">
+      <br>
+      (awesomness part for this assignment) Upload a image and draw over it!, 
+      <input type='file' id="fileUpload"/>
+      <button type="button" id="removeimage">remove image</button>
+      <script type="importmap">
+        {
+          "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/"
+          }
+        }
+      </script>
+      <script src="../lib/webgl-utils.js"></script>
+      <script src="../lib/webgl-debug.js"></script>
+     <script src="../lib/cuon-utils.js"></script>
+     <script src="../lib/cuon-matrix-cse160.js"></script>
+     <script src="Triangle.js"></script>
+     <script src="Point.js"></script>
+     <script src="Circle.js"></script>
+     <script src="cone.js"></script>
+     <script src="cube.js"></script>
+      <script src="asgn3.js"></script>
+   </body>
+   <script src="uploadfile.js"></script>
+   <br>
+   Andrew Chu antchu@ucsc.edu
+ </html>
+ 
