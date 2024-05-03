@@ -1,10 +1,10 @@
 // ColoredPoint.js (c) 2012 matsuda
 // Vertex shader program
 var VSHADER_SOURCE =
-'precision mediump float; attribute vec2 a_UV; varying vec2 v_UV; uniform mat4 u_ViewMatrix; uniform mat4 u_ProjectionMatrix; uniform mat4 u_ModelMatrix; attribute vec4 a_Position; uniform mat4 u_GlobalRotateMatrix; void main() {gl_Position = u_GlobalRotateMatrix*u_ModelMatrix*a_Position; v_UV=a_UV;}';
+'precision mediump float; attribute vec2 a_UV; varying vec2 v_UV; uniform mat4 u_ViewMatrix; uniform mat4 u_ProjectionMatrix; uniform mat4 u_ModelMatrix; attribute vec4 a_Position; uniform mat4 u_GlobalRotateMatrix; void main() {gl_Position = u_ProjectionMatrix*u_ViewMatrix*u_GlobalRotateMatrix*u_ModelMatrix*a_Position; v_UV=a_UV;}';
 
 // Fragment shader program
-var FSHADER_SOURCE ='precision mediump float;varying vec2 v_UV;uniform vec4 u_FragColor; uniform sampler2D u_Sampler0; void main() {gl_FragColor = u_FragColor; gl_FragColor=vec4(v_UV,1.0,1.0); gl_FragColor=texture2D(u_Sampler0,v_UV);}';
+var FSHADER_SOURCE ='precision mediump float;varying vec2 v_UV;uniform vec4 u_FragColor; uniform sampler2D u_Sampler0; uniform int u_whichTexture; void main() {if(u_whichTexture==-2){gl_FragColor=u_FragColor;}else if (u_whichTexture==-1){gl_FragColor=vec4(v_UV,1.0,1.0);}else if (u_whichTexture==0){gl_FragColor=texture2D(u_Sampler0,v_UV);}else{gl_FragColor=vec4(1,0.2,0.2,1);}}';
 //global variables
 let canvas;
 let gl;
@@ -15,6 +15,10 @@ let u_Size;
 let u_ModelMatrix;
 let u_GlobalRotateMatrix;
 let u_Sampler0;
+let u_whichTexture;
+let u_ProjectionMatrix;
+let u_ViewMatrix;
+
 
 
 function connectVariablesToGLSL(){
@@ -56,6 +60,21 @@ function connectVariablesToGLSL(){
   if (!u_Sampler0) {
     console.log('Failed to get the storage location of u_Sampler');
     return false;
+  }
+  u_whichTexture=gl.getUniformLocation(gl.program,'u_whichTexture');
+  if(!u_whichTexture){
+    console.log('failed to get storage location of whichtextre');
+    return;
+  }
+  u_ViewMatrix=gl.getUniformLocation(gl.program,'u_ViewMatrix');
+  if(!u_ViewMatrix){
+    console.log('failed to get storage location of viewmatrix');
+    return;
+  }
+  u_ProjectionMatrix=gl.getUniformLocation(gl.program,'u_ProjectionMatrix');
+  if(!u_ProjectionMatrix){
+    console.log('failed to get storage location of projectionmatrix');
+    return;
   }
 
   var identityM=new Matrix4();
@@ -149,7 +168,7 @@ function sendTextureToGLSL(image) {
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
   
   // Set the texture unit 0 to the sampler
-  gl.uniform1i(u_Sampler, 0);
+  gl.uniform1i(u_Sampler0, 0);
   
   //gl.clear(gl.COLOR_BUFFER_BIT);   // Clear <canvas>
 
@@ -296,15 +315,38 @@ function renderAllShapes(){
   globalRotMat.rotate(g_globalZAngle,0,0,1);
   gl.uniformMatrix4fv(u_GlobalRotateMatrix,false,globalRotMat.elements);
 
+  var projMat=new Matrix4();
+  projMat.setPerspective(50,1*canvas.width/canvas.height,1,100);
+  gl.uniformMatrix4fv(u_ProjectionMatrix,false,projMat.elements);
+
+  var viewMat=new Matrix4();
+  viewMat.setLookAt(0,0,3,0,0,-120,0,1,0);
+  gl.uniformMatrix4fv(u_ViewMatrix,false,viewMat.elements);
+
   // var len = g_shapesList.length;
   // for(var i = 0; i < len; i++) {
   //   g_shapesList[i].render();
   // }
 
   
+  var floor=new Cube();
+  floor.color=[1.0,0.0,0.0,1.0];
+  floor.textureNum=-1;
+  floor.matrix.translate(0,-0.75,0.0);
+  floor.matrix.scale(10,0,10);
+  floor.matrix.translate(-0.5,0,-0.5);
+  floor.render();
+
+  var sky=new Cube();
+  sky.color=[1.0,0.0,0.0,1.0];
+  sky.textureNum=-2;
+  sky.matrix.scale(50,50,50);
+  sky.matrix.translate(-0.5,-0.5,-0.5);
+  sky.render();
 
   var body=new Cube();
   body.color=[1,1,1,1.0];
+  body.textureNum=-1;
   body.matrix.translate(-.25,-0.4,0.0);
   //body.matrix.rotate(-5,1,0,0);
   body.matrix.scale(0.5,0.4,0.4);
@@ -341,6 +383,7 @@ function renderAllShapes(){
   redthing.render();
 
   var wing1=new Cube();
+  wing1.textureNum=0;
   wing1.color=[1,1,1,1.0];
   wing1.matrix.rotate(180,1,0,0);
   wing1.matrix.translate(-.2,0,0);
