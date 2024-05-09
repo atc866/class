@@ -115,6 +115,7 @@ let g_hatangle=0;
 let g_hatanimation=true;
 let g_wing1animation=false;
 let g_wing2animation=false;
+
 //set up actions for the html ui elements
 function addActionForHtmlUI(){
   document.getElementById('animationMagentaOffButton').onclick=function(){g_magentaAnimation=false};
@@ -248,6 +249,9 @@ function main() {
   setupBuffer();
   connectVariablesToGLSL();
   addActionForHtmlUI();
+  camera=new Camera();
+  document.onkeydown = keydown;
+  document.onkeyup = keyup;
   initTextures();
   // Register function (event handler) to be called on a mouse press
   canvas.onclick=function(ev){if(ev.shiftKey){
@@ -274,6 +278,7 @@ function tick(){
   g_seconds=performance.now()/1000.0-g_startTime;
   updateAnimationAngles();
   renderAllShapes();
+  updateCameraPositon();
   requestAnimationFrame(tick);
 }
 
@@ -347,6 +352,115 @@ function convertCoordinatesEventToGL(ev){
   return([x,y])
 }
 
+//smooth camera movement from hall of fame
+//https://people.ucsc.edu/~jkohls/pa3/virtualWorld.html
+let g_key_w = 0;
+let g_key_s = 0;
+let g_key_a = 0;
+let g_key_d = 0;
+let g_key_up = 0;
+let g_key_down = 0;
+let g_key_left = 0;
+let g_key_right = 0;
+let g_key_q = 0;
+let g_key_e = 0;
+
+function keydown(ev) {
+
+  if (ev.keyCode == 87) { g_key_w = 1; }      // w
+  if (ev.keyCode == 83) { g_key_s = 1; }      // s
+  if (ev.keyCode == 65) { g_key_a = 1; }      // a
+  if (ev.keyCode == 68) { g_key_d = 1; }      // d
+
+  if (ev.keyCode == 38) { g_key_up = 1; }     // uparrow
+  if (ev.keyCode == 40) { g_key_down = 1; }   // down arrow
+  if (ev.keyCode == 37) { g_key_left = 1; }   // left arrow
+  if (ev.keyCode == 39) { g_key_right = 1; }  // right arrow
+
+  if (ev.keyCode == 81) { g_key_q = 1; }      // q
+  if (ev.keyCode == 69) { g_key_e = 1; }      // e
+}
+
+function keyup(ev) {
+
+  if (ev.keyCode == 87) { g_key_w = 0; }
+  if (ev.keyCode == 83) { g_key_s = 0; }
+  if (ev.keyCode == 65) { g_key_a = 0; }
+  if (ev.keyCode == 68) { g_key_d = 0; }
+
+  if (ev.keyCode == 38) { g_key_up = 0; }
+  if (ev.keyCode == 40) { g_key_down = 0; }
+  if (ev.keyCode == 37) { g_key_left = 0; }
+  if (ev.keyCode == 39) { g_key_right = 0; }
+
+  if (ev.keyCode == 81) { g_key_q = 0; }      // q
+  if (ev.keyCode == 69) { g_key_e = 0; }      // e
+
+}
+function updateCameraPositon() {
+    if (g_key_w == 1) { camera.moveForward(); }
+    if (g_key_s == 1) { camera.moveBack(); }
+    if (g_key_a == 1) { camera.moveLeft(); }
+    if (g_key_d == 1) { camera.moveRight(); }
+    if (g_key_up == 1) { camera.moveForward(); }
+    if (g_key_down == 1) { camera.moveBack(); }
+    if (g_key_left == 1) { camera.moveLeft(); }
+    if (g_key_right == 1) { camera.moveRight(); }
+    if (g_key_q == 1) { camera.panLeft(5); }
+    if (g_key_e == 1) { camera.panRight(5); }
+}
+var g_eye=[0,0,3];
+var g_at=[0,0,-100];
+var g_up=[0,1,0];
+var camera;
+var g_map=[
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+]
+function drawMap(){
+  for(x=0;x<32;x++){
+    for(y=0;y<32;y++){
+      if(g_map[x][y]==1){
+        var map=new Cube();
+        map.color=[1.0,0.0,0.0,1.0];
+        map.textureNum=1;
+        map.matrix.translate(x-16,0,y-16);
+        map.render();
+      }
+    }
+  }
+}
 function renderAllShapes(){
   var startTime = performance.now();
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -356,12 +470,13 @@ function renderAllShapes(){
   globalRotMat.rotate(g_globalZAngle,0,0,1);
   gl.uniformMatrix4fv(u_GlobalRotateMatrix,false,globalRotMat.elements);
 
-  var projMat=new Matrix4();
-  projMat.setPerspective(50,1*canvas.width/canvas.height,1,100);
+  var projMat=camera.projMat;
   gl.uniformMatrix4fv(u_ProjectionMatrix,false,projMat.elements);
 
   var viewMat=new Matrix4();
-  viewMat.setLookAt(0,0,3,0,0,-120,0,1,0);
+  viewMat.setLookAt(camera.eye.elements[0], camera.eye.elements[1], camera.eye.elements[2],
+    camera.at.elements[0], camera.at.elements[1], camera.at.elements[2],
+    camera.up.elements[0], camera.up.elements[1], camera.up.elements[2]);
   gl.uniformMatrix4fv(u_ViewMatrix,false,viewMat.elements);
 
   // var len = g_shapesList.length;
@@ -504,8 +619,7 @@ function renderAllShapes(){
   h.matrix.rotate(270,1,0,0);
   h.matrix.rotate(g_s2angle,0,1,0);
   h.render();
-
-
+  drawMap();
   var duration = performance.now() - startTime;
   sentTextToHTML("ms: " + Math.floor(duration) + " fps: " + Math.floor(1000/duration), "numdot");
 
