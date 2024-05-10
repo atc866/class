@@ -241,7 +241,34 @@ function setUpWebGL() {
     gl.enable(gl.DEPTH_TEST);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 }
-
+function mouseclick(ev){
+  var x = Math.round(camera.eye.elements[0]);
+  var y = Math.round(camera.eye.elements[1]);
+  var z = Math.round(camera.eye.elements[2]);
+  //console.log(x);
+  //console.log(y);
+  //console.log(z);
+  if(ev.buttons==1){
+    console.log("leftclick")
+    console.log(x,y,z);
+      if(x < 16 && x >= -16 && y < 16 && y >= -16 && z < 16 && z >= -16) {
+        //console.log("existing block: " + this.blocks[x][y][z]);
+        g_map[x+16][z+16]=0;
+        console.log("delete");
+        //console.log("after block: " + this.blocks[x][y][z]);
+      }  
+  }  
+  if(ev.buttons==2){
+    console.log("rightlcick")
+    console.log(x,y,z);
+      if(x < 16 && x >= -16 && y < 16 && y >= -16 && z < 16 && z >= -16) {
+        //console.log("existing block: " + this.blocks[x][y][z]);
+        g_map[x+16][z+16]=1;
+        console.log("BUILD");
+        //console.log("after block: " + this.blocks[x][y][z]);
+      }    
+}
+};
 
 function main() {
 
@@ -253,14 +280,22 @@ function main() {
   document.onkeydown = keydown;
   document.onkeyup = keyup;
   initTextures();
+  document.addEventListener('mousedown', mouseclick);
   // Register function (event handler) to be called on a mouse press
-  canvas.onclick=function(ev){if(ev.shiftKey){
-    console.log("pressed shift")
-    g_wing1animation=true;
-    g_wing2animation=true;
-  }};
-  canvas.onmousedown = origin;
-  canvas.onmousemove=function(ev){if(ev.buttons==1)click(ev)};
+  canvas.onclick=mouseclick;
+  canvas.onmousemove = function (ev) { 
+    if (ev.buttons == 1) {
+      freecam(ev, 1);
+      console.log(1);
+    }
+    else {
+      if (firstCoords[0] != 2) {
+        prevCords = [0, 0];
+        firstCoords = [2, 2];
+      }
+    }
+  };
+  window.oncontextmenu = function () {return false; }
   // Specify the color for clearing <canvas>
   gl.clearColor(0, 0, 0, 1.0);
 
@@ -308,21 +343,31 @@ function updateAnimationAngles(){
 //var g_shapesList=[];\
 
 
-//camaera stuff with mouse taken from https://people.ucsc.edu/~jrgu/asg2/blockyAnimal/BlockyAnimal.html in halloffame
-function origin(ev) {
-  var x = ev.clientX;
-  var y = ev.clientY;
-  g_origin = [x, y];
-}
+var firstCoords = [2, 2];
+var prevCords = [0, 0];
+//from hall of famehttps://people.ucsc.edu/~jkohls/pa3/virtualWorld.html
+function freecam(ev) {
+  let [x, y] = CoordinatesEconvertventToGL(ev);
 
-function click(ev) {
-  
-  // extract the event click and return webgl coordinates
-  let [x,y]=convertCoordinatesEventToGL(ev);
-  g_globalXAngle=g_globalXAngle-x*360
-  g_globalYAngle=g_globalYAngle-y*360
-  renderAllShapes();
+  if (firstCoords[0] == 2) {
+    firstCoords = [x, y];
+    prevCords[0] = x;
+    prevCords[1] = y;
   }
+
+  if (prevCords[0] < x) {
+    //console.log("x increase");
+    camera.panRight(Math.abs(prevCords[0] - x) * 60);
+    current_dir_x = 1;
+  } else if (prevCords[0] > x) {
+    current_dir_x = 2;
+    camera.panLeft(Math.abs(prevCords[0] - x) * 60);
+    //console.log("x decrease");
+  }
+  prevCords[0] = x;
+  prevCords[1] = y;
+
+}
   
 
 
@@ -342,13 +387,13 @@ function click(ev) {
 
 
 //extract even click and return to webgl coordinates
-function convertCoordinatesEventToGL(ev){
+function CoordinatesEconvertventToGL(ev){
   var x = ev.clientX; // x coordinate of a mouse pointer
   var y = ev.clientY; // y coordinate of a mouse pointer
-  let temp = [x,y];
-  x = (x - g_origin[0])/400;
-  y = (y - g_origin[1])/400;
-  g_origin = temp;
+  var rect = ev.target.getBoundingClientRect();
+
+  x = (x - rect.left - canvas.width / 2) / (canvas.width / 2);
+  y = (canvas.height / 2 - (y - rect.top)) / (canvas.height / 2);
   return([x,y])
 }
 

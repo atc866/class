@@ -18,7 +18,7 @@ class Camera{
        f.set(this.at);
        f.sub(this.eye);
        f = f.normalize();
-       f.mul(0.25); //speed
+       f.mul(0.05); //speed
        this.at = this.at.add(f);
        this.eye = this.eye.add(f);
     }
@@ -28,7 +28,7 @@ class Camera{
        f.set(this.at);
        f.sub(this.eye);
        f.normalize();
-       f.mul(0.25);
+       f.mul(0.05);
        this.at = this.at.sub(f);
        this.eye = this.eye.sub(f);
     }
@@ -38,7 +38,7 @@ class Camera{
        f.set(this.at)
        f.sub(this.eye);
        f.normalize();
-       f.mul(0.25);
+       f.mul(0.05);
        var s = Vector3.cross(this.up,f);
        this.at.add(s);
        this.eye.add(s);
@@ -49,7 +49,7 @@ class Camera{
        f.set(this.at)
        f.sub(this.eye);
        f.normalize();
-       f.mul(0.25);
+       f.mul(0.05);
        var s=Vector3.cross(f, this.up);
        this.at.add(s);
        this.eye.add(s);
@@ -80,4 +80,5 @@ class Camera{
        eyecopy.set(this.eye);
        this.at.set(eyecopy.add(f_prime));
     }
+    
  }
