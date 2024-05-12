@@ -4,7 +4,7 @@ var VSHADER_SOURCE =
 'precision mediump float; attribute vec2 a_UV; varying vec2 v_UV; uniform mat4 u_ViewMatrix; uniform mat4 u_ProjectionMatrix; uniform mat4 u_ModelMatrix; attribute vec4 a_Position; uniform mat4 u_GlobalRotateMatrix; void main() {gl_Position = u_ProjectionMatrix*u_ViewMatrix*u_GlobalRotateMatrix*u_ModelMatrix*a_Position; v_UV=a_UV;}';
 
 // Fragment shader program
-var FSHADER_SOURCE ='precision mediump float;varying vec2 v_UV;uniform vec4 u_FragColor; uniform sampler2D u_Sampler0; uniform sampler2D u_Sampler1; uniform int u_whichTexture; void main() {if(u_whichTexture==-2){gl_FragColor=u_FragColor;}else if (u_whichTexture==-1){gl_FragColor=vec4(v_UV,1.0,1.0);}else if (u_whichTexture==0){gl_FragColor=texture2D(u_Sampler0,v_UV);}else if (u_whichTexture==1){gl_FragColor=texture2D(u_Sampler1,v_UV);} else{gl_FragColor=vec4(1,0.2,0.2,1);}}';
+var FSHADER_SOURCE ='precision mediump float;varying vec2 v_UV;uniform vec4 u_FragColor; uniform sampler2D u_Sampler0; uniform sampler2D u_Sampler1; uniform sampler2D u_Sampler2;uniform sampler2D u_Sampler3;uniform sampler2D u_Sampler4;uniform int u_whichTexture; void main() {if(u_whichTexture==-2){gl_FragColor=u_FragColor;}else if (u_whichTexture==-1){gl_FragColor=vec4(v_UV,1.0,1.0);}else if (u_whichTexture==0){gl_FragColor=texture2D(u_Sampler0,v_UV);}else if (u_whichTexture==1){gl_FragColor=texture2D(u_Sampler1,v_UV);}else if (u_whichTexture==2){gl_FragColor=texture2D(u_Sampler2,v_UV);}else if (u_whichTexture==3){gl_FragColor=texture2D(u_Sampler3,v_UV);}else if (u_whichTexture==4){gl_FragColor=texture2D(u_Sampler4,v_UV);} else{gl_FragColor=vec4(1,0.2,0.2,1);}}';
 //global variables
 let canvas;
 let gl;
@@ -16,6 +16,9 @@ let u_ModelMatrix;
 let u_GlobalRotateMatrix;
 let u_Sampler0;
 let u_Sampler1;
+let u_Sampler2;
+let u_Sampler3;
+let u_Sampler4;
 let u_whichTexture;
 let u_ProjectionMatrix;
 let u_ViewMatrix;
@@ -64,6 +67,21 @@ function connectVariablesToGLSL(){
   }
   u_Sampler1 = gl.getUniformLocation(gl.program, 'u_Sampler1');
   if (!u_Sampler1) {
+    console.log('Failed to get the storage location of u_Sampler');
+    return false;
+  }
+  u_Sampler2 = gl.getUniformLocation(gl.program, 'u_Sampler2');
+  if (!u_Sampler2) {
+    console.log('Failed to get the storage location of u_Sampler');
+    return false;
+  }
+  u_Sampler3 = gl.getUniformLocation(gl.program, 'u_Sampler3');
+  if (!u_Sampler3) {
+    console.log('Failed to get the storage location of u_Sampler');
+    return false;
+  }
+  u_Sampler4 = gl.getUniformLocation(gl.program, 'u_Sampler4');
+  if (!u_Sampler4) {
     console.log('Failed to get the storage location of u_Sampler');
     return false;
   }
@@ -118,26 +136,8 @@ let g_wing2animation=false;
 
 //set up actions for the html ui elements
 function addActionForHtmlUI(){
-  document.getElementById('animationMagentaOffButton').onclick=function(){g_magentaAnimation=false};
-  document.getElementById('animationMagentaOnButton').onclick=function(){g_magentaAnimation=true};
-  document.getElementById('animationYellowOffButton').onclick=function(){g_yellowAnimation=false};
-  document.getElementById('animationYellowOnButton').onclick=function(){g_yellowAnimation=true};
-  document.getElementById('animationwing1OnButton').onclick=function(){g_wing1animation=true};
-  document.getElementById('animationwing1OffButton').onclick=function(){g_wing1animation=false};
-  document.getElementById('animationwing2OnButton').onclick=function(){g_wing2animation=true};
-  document.getElementById('animationwing2OffButton').onclick=function(){g_wing2animation=false};
-  document.getElementById('animationhatOnButton').onclick=function(){g_hatanimation=true};
-  document.getElementById('animationhatOffButton').onclick=function(){g_hatanimation=false};
-  document.getElementById('magentaSlide').addEventListener('mousemove',function(){g_leg2angle=this.value; renderAllShapes();});
-  document.getElementById('yellowSlide').addEventListener('mousemove',function(){g_leg1angle=this.value; renderAllShapes();});
-  document.getElementById('wing1Slide').addEventListener('mousemove',function(){g_wing1angle=this.value; renderAllShapes();});
-  document.getElementById('wing2Slide').addEventListener('mousemove',function(){g_wing2angle=this.value; renderAllShapes();});
-  document.getElementById('feet1Slide').addEventListener('mousemove',function(){g_feet1angle=this.value; renderAllShapes();});
-  document.getElementById('feet2Slide').addEventListener('mousemove',function(){g_feet2angle=this.value; renderAllShapes();});
-  document.getElementById('s1Slide').addEventListener('mousemove',function(){g_s1angle=this.value; renderAllShapes();});
-  document.getElementById('s2Slide').addEventListener('mousemove',function(){g_s2angle=this.value; renderAllShapes();});
-  document.getElementById('hatSlide').addEventListener('mousemove',function(){g_hatangle=this.value; renderAllShapes();});
-  document.getElementById('angleSlide').addEventListener('mousemove',function(){g_globalAngle=this.value; renderAllShapes();});
+ 
+ 
   //document.getElementById('segSlide').addEventListener('mouseup',function(){g_circlesSegmentCount=this.value});
 } 
 function initTextures() {
@@ -145,6 +145,9 @@ function initTextures() {
   // Get the storage location of u_Sampler
   var image = new Image();  // Create the image object
   var wlr=new Image();
+  var dl=new Image();
+  var st=new Image();
+  var m=new Image();
   if (!image) {
     console.log('Failed to create the image object');
     return false;
@@ -153,14 +156,32 @@ function initTextures() {
     console.log("failed to create the image object");
     return false;
   }
+  if (!dl) {
+    console.log('Failed to create the image object');
+    return false;
+  }
+  if(!st){
+    console.log("failed to create the image object");
+    return false;
+  }
+  if (!m) {
+    console.log('Failed to create the image object');
+    return false;
+  }
   // Register the event handler to be called on loading an image
   image.onload = function(){ sendTextureToGLSL(image);};
-
   wlr.onload=function(){sendTextureToGLSL1(wlr);};
+  dl.onload=function(){sendTextureToGLSL2(dl);};
+  st.onload=function(){sendTextureToGLSL3(st);};
+  m.onload=function(){sendTextureToGLSL4(m);};
+
   // Tell the browser to load an image
   image.src = '../sky.jpg';
   //add more textures here later
   wlr.src='../wlrcover.jpg';
+  dl.src='../dielit.jpg';
+  st.src='../selftitled.jpg';
+  m.src='../music.jpg';
   return true;
 }
 
@@ -216,7 +237,84 @@ function sendTextureToGLSL1(image) {
 
   //gl.drawArrays(gl.TRIANGLE_STRIP, 0, n); // Draw the rectangle
 }
+function sendTextureToGLSL2(image) {
+  var texture2 = gl.createTexture();   // Create a texture object
+  if (!texture2) {
+    console.log('Failed to create the texture object');
+    return false;
+  }
 
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
+  // Enable texture unit0
+  gl.activeTexture(gl.TEXTURE2);
+  // Bind the texture object to the target
+  gl.bindTexture(gl.TEXTURE_2D, texture2);
+
+  // Set the texture parameters
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  // Set the texture image
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+  
+  // Set the texture unit 0 to the sampler
+  gl.uniform1i(u_Sampler2, 2);
+  console.log("texture2");
+  
+  //gl.clear(gl.COLOR_BUFFER_BIT);   // Clear <canvas>
+
+  //gl.drawArrays(gl.TRIANGLE_STRIP, 0, n); // Draw the rectangle
+}
+function sendTextureToGLSL3(image) {
+  var texture3 = gl.createTexture();   // Create a texture object
+  if (!texture3) {
+    console.log('Failed to create the texture object');
+    return false;
+  }
+
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
+  // Enable texture unit0
+  gl.activeTexture(gl.TEXTURE3);
+  // Bind the texture object to the target
+  gl.bindTexture(gl.TEXTURE_2D, texture3);
+
+  // Set the texture parameters
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  // Set the texture image
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+  
+  // Set the texture unit 0 to the sampler
+  gl.uniform1i(u_Sampler3, 3);
+  console.log("texture3");
+  
+  //gl.clear(gl.COLOR_BUFFER_BIT);   // Clear <canvas>
+
+  //gl.drawArrays(gl.TRIANGLE_STRIP, 0, n); // Draw the rectangle
+}
+function sendTextureToGLSL4(image) {
+  var texture4 = gl.createTexture();   // Create a texture object
+  if (!texture4) {
+    console.log('Failed to create the texture object');
+    return false;
+  }
+
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
+  // Enable texture unit0
+  gl.activeTexture(gl.TEXTURE4);
+  // Bind the texture object to the target
+  gl.bindTexture(gl.TEXTURE_2D, texture4);
+
+  // Set the texture parameters
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  // Set the texture image
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+  
+  // Set the texture unit 0 to the sampler
+  gl.uniform1i(u_Sampler4, 4);
+  console.log("texture4");
+  
+  //gl.clear(gl.COLOR_BUFFER_BIT);   // Clear <canvas>
+
+  //gl.drawArrays(gl.TRIANGLE_STRIP, 0, n); // Draw the rectangle
+}
 //performancce optimization stuff taken from hall of fame
 //https://people.ucsc.edu/~adion/Andre_Dion_Assignment_2/asg2.html
 function setupBuffer(){
@@ -241,6 +339,12 @@ function setUpWebGL() {
     gl.enable(gl.DEPTH_TEST);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 }
+let dlplaying=false;
+let wlrplaying=false;
+let yahplaying=false;
+let longtime=new Audio("../longtime.mp3");
+let iluihu=new Audio("../iloveuihateu.mp3");
+let yah=new Audio("../yahmean.mp3");
 function mouseclick(ev){
   var x = Math.round(camera.eye.elements[0]);
   var y = Math.round(camera.eye.elements[1]);
@@ -251,19 +355,62 @@ function mouseclick(ev){
   if(ev.buttons==1){
     console.log("leftclick")
     console.log(x,y,z);
-      if(x < 16 && x >= -16 && y < 16 && y >= -16 && z < 16 && z >= -16) {
+      if(x < 16 && x >= -16 && y < 16 && y >= -16 && z < 4 && z >= -28) {
         //console.log("existing block: " + this.blocks[x][y][z]);
-        g_map[x+16][z+16]=0;
+        g_map[x+16][z+27]=0;
         console.log("delete");
+        if(x+16==16 && z+27==3){
+          if(dlplaying==false){
+            longtime.volume=0.5;
+            longtime.play();
+            dlplaying=true;
+          }
+        }
+        if(x+16==26 && z+27==3){
+          if(wlrplaying==false){
+            iluihu.volume=0.5;
+            iluihu.play();
+            wlrplaying=true;
+          }
+        }
+        if(x+16==5 && z+27==3){
+          if(yahplaying==false){
+            yah.volume=0.5;
+            yah.play();
+            yahplaying=true;
+          }
+        }
         //console.log("after block: " + this.blocks[x][y][z]);
       }  
   }  
   if(ev.buttons==2){
     console.log("rightlcick")
     console.log(x,y,z);
-      if(x < 16 && x >= -16 && y < 16 && y >= -16 && z < 16 && z >= -16) {
+      if(x < 16 && x >= -16 && y < 16 && y >= -16 && z < 4 && z >= -28) {
         //console.log("existing block: " + this.blocks[x][y][z]);
-        g_map[x+16][z+16]=1;
+        g_map[x+16][z+27]=1;
+        if(x+16==16 && z+27==3){
+          if(dlplaying==true){
+            longtime.volume=0.5;
+            longtime.pause();
+            dlplaying=false;
+          }
+        }
+        if(x+16==26 && z+27==3){
+          if(wlrplaying==true){
+            iluihu.volume=0.5;
+            iluihu.pause();
+            wlrplaying=false;
+          }
+        }
+        if(x+16==5 && z+27==3){
+          if(yahplaying==true){
+            yah.volume=0.5;
+            yah.pause();
+            yahplaying=false;
+          }
+        }
+
         console.log("BUILD");
         //console.log("after block: " + this.blocks[x][y][z]);
       }    
@@ -459,49 +606,72 @@ var g_at=[0,0,-100];
 var g_up=[0,1,0];
 var camera;
 var g_map=[
-  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 ]
 function drawMap(){
-  for(x=0;x<32;x++){
-    for(y=0;y<32;y++){
-      if(g_map[x][y]==1){
-        var map=new Cube();
-        map.color=[1.0,0.0,0.0,1.0];
-        map.textureNum=1;
-        map.matrix.translate(x-16,0,y-16);
-        map.render();
+  //var map=new Cube();
+  for(i=0;i<2;i++){
+    for(x=0;x<32;x++){
+      for(y=0;y<32;y++){
+        if(g_map[x][y]==1 && x==16 && y==3){
+          var map=new Cube();
+          map.color=[1.0,0.0,0.0,1.0];
+          map.textureNum=2;
+          map.matrix.translate(x-16.5,-0.5,y-28);
+          map.renderfastuv();
+        }
+        else if(g_map[x][y]==1 && x==26 && y==3){
+          var map=new Cube();
+          map.color=[1.0,0.0,0.0,1.0];
+          map.textureNum=1;
+          map.matrix.translate(x-16.5,-0.5,y-28);
+          map.renderfastuv();
+        }
+        else if(g_map[x][y]==1 && x==5 && y==3){
+          var map=new Cube();
+          map.color=[1.0,0.0,0.0,1.0];
+          map.textureNum=3;
+          map.matrix.translate(x-16.5,-0.5,y-28);
+          map.renderfastuv();
+        }
+        else if(g_map[x][y]==1){
+          var map=new Cube();
+          map.color=[1.0,0.0,0.0,1.0];
+          map.textureNum=4;
+          map.matrix.translate(x-16.5,-0.5,y-28);
+          map.renderfastuv();
+        }
       }
     }
   }
@@ -532,138 +702,17 @@ function renderAllShapes(){
   
   var floor=new Cube();
   floor.color=[1.0,0.0,0.0,1.0];
-  floor.textureNum=0;
-  floor.matrix.translate(0,-0.75,0.0);
-  floor.matrix.scale(10,0,10);
-  floor.matrix.translate(-0.5,0,-0.5);
+  floor.textureNum=-1;
+  floor.matrix.translate(-16,-0.5,-29);
+  floor.matrix.scale(50,0,50);
   floor.render();
 
   var sky=new Cube();
   sky.color=[1.0,0.0,0.0,1.0];
-  sky.textureNum=1;
+  sky.textureNum=0;
+  sky.matrix.translate(-16,-5,-29);
   sky.matrix.scale(50,50,50);
-  sky.matrix.translate(-0.5,-0.5,-0.5);
   sky.render();
-
-  var body=new Cube();
-  body.color=[1,1,1,1.0];
-  body.textureNum=-1;
-  body.matrix.translate(-.25,-0.4,0.0);
-  //body.matrix.rotate(-5,1,0,0);
-  body.matrix.scale(0.5,0.4,0.4);
-  body.render();
-
-  var head=new Cube();
-  head.color=[1,1,1,1.0];
-  head.matrix.translate(-0.35,-0.15,0.08);
-  head.matrix.scale(0.2,0.4,0.25);
-  head.render();
-
-  var eye1=new Cube();
-  eye1.color=[0,0,0,1]
-  eye1.matrix.translate(-0.353,0.1,0.07);
-  eye1.matrix.scale(0.105,0.1,0.1);
-  eye1.render();
-
-  var eye2=new Cube();
-  eye2.color=[0,0,0,1]
-  eye2.matrix.translate(-0.353,0.1,0.25);
-  eye2.matrix.scale(0.105,0.1,0.1);
-  eye2.render();
-
-  var beak=new Cube();
-  beak.color=[238/255,210/255,2/255,1]
-  beak.matrix.translate(-0.45,-0.05,0.08);
-  beak.matrix.scale(0.1,0.15,0.25);
-  beak.render();
-
-  var redthing=new Cube();
-  redthing.color=[1,0,0,1];
-  redthing.matrix.translate(-0.45,-0.15,0.15);
-  redthing.matrix.scale(0.1,0.1,0.1);
-  redthing.render();
-
-  var wing1=new Cube();
-  wing1.textureNum=-1;
-  wing1.color=[1,1,1,1.0];
-  wing1.matrix.rotate(180,1,0,0);
-  wing1.matrix.translate(-.2,0,0);
-  wing1.matrix.rotate(g_wing1angle,1,0,0);
-  wing1.matrix.scale(0.4,0.3,0.05);
-  wing1.render();
-
-  var wing2=new Cube();
-  wing2.textureNum=-1;
-  wing2.color=[1,1,1,1.0];
-  wing2.matrix.rotate(180,1,0,0);
-  wing2.matrix.rotate(180,0,1,0);
-  wing2.matrix.translate(-.2,0,0.4);
-  wing2.matrix.rotate(g_wing2angle,1,0,0);
-  wing2.matrix.scale(0.4,0.3,0.05);
-  wing2.render();
-
-  var leg1=new Cube();
-  leg1.color=[241/255,235/255,156/255,1];
-  leg1.matrix.translate(0.05,-0.4,0.05);
-  leg1.matrix.rotate(180,0,0,1);
-  leg1.matrix.rotate(-g_leg1angle,0,0,1);
-  var leg1mat=new Matrix4(leg1.matrix);
-  leg1.matrix.scale(0.05,0.25,0.04);
-  leg1.render();
-  var leg2=new Cube();
-  leg2.color=[241/255,235/255,156/255,1];
-  leg2.matrix.translate(0.05,-0.4,0.3);
-  leg2.matrix.rotate(180,0,0,1);
-  leg2.matrix.rotate(-g_leg2angle,0,0,1);
-  var leg2mat=new Matrix4(leg2.matrix);
-  leg2.matrix.scale(0.05,0.25,0.04);
-  leg2.render();
-
-  var feet1=new Cube();
-  feet1.color=[241/255,235/255,156/255,1];
-  feet1.matrix=leg1mat;
-  feet1.matrix.translate(0,0.25,-0.02);
-  feet1.matrix.rotate(-g_feet1angle,0,0,1);
-  //body.matrix.rotate(-5,1,0,0);
-  var feet1mat=new Matrix4(feet1.matrix);
-  feet1.matrix.scale(0.1,0.01,0.1);
-  feet1.render();
-  var feet2=new Cube();
-  feet2.color=[241/255,235/255,156/255,1];
-  feet2.matrix=leg2mat;
-  feet2.matrix.translate(0,0.25,-0.02);
-  feet2.matrix.rotate(-g_feet2angle,0,0,1);
-  var feet2mat=new Matrix4(feet2.matrix);
-  //body.matrix.rotate(-5,1,0,0);
-  feet2.matrix.scale(0.1,0.01,0.1);
-  feet2.render();
-  
-  var hat=new Cone();
-  hat.color = [228/255,211/255,46/255,1];
-  hat.matrix.translate(-0.25, 0.25, 0.2);
-  hat.matrix.scale(0.6,0.2,0.6);
-  hat.matrix.rotate(270,1,0,0);
-  hat.matrix.rotate(g_hatangle,0,0,1);
-  hat.render();
-
-
-  var heelthing=new Cone();
-  heelthing.color=[0.5,0.5,0.5,1];
-  heelthing.matrix=feet2mat;
-  heelthing.matrix.translate(0.05, 0.01, 0.05);
-  heelthing.matrix.scale(0.05,0.25,0.05);
-  heelthing.matrix.rotate(270,1,0,0);
-  heelthing.matrix.rotate(g_s1angle,0,1,0);
-  heelthing.render();
-
-  var h=new Cone();
-  h.color=[0.5,0.5,0.5,1];
-  h.matrix=feet1mat;
-  h.matrix.translate(0.05, 0.01, 0.05);
-  h.matrix.scale(0.05,0.25,0.05);
-  h.matrix.rotate(270,1,0,0);
-  h.matrix.rotate(g_s2angle,0,1,0);
-  h.render();
   drawMap();
   var duration = performance.now() - startTime;
   sentTextToHTML("ms: " + Math.floor(duration) + " fps: " + Math.floor(1000/duration), "numdot");
