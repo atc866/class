@@ -22,7 +22,19 @@ let u_Sampler4;
 let u_whichTexture;
 let u_ProjectionMatrix;
 let u_ViewMatrix;
-
+let dlplaying=false;
+let wlrplaying=false;
+let yahplaying=false;
+let mollyplaying=false;
+let manyplaying=false;
+let musicplaying=false;
+let longtime=new Audio("../longtime.mp3");
+let iluihu=new Audio("../iloveuihateu.mp3");
+let yah=new Audio("../yahmean.mp3");
+let molly=new Audio("../molly.mp3");
+let many=new Audio("../2many.mp3")
+let music=new Audio("../2024.mp3");
+let globalaudio=0.3;
 
 
 function connectVariablesToGLSL(){
@@ -136,7 +148,15 @@ let g_wing2animation=false;
 
 //set up actions for the html ui elements
 function addActionForHtmlUI(){
- 
+  document.getElementById('sound').addEventListener('change',function(){globalaudio=this.value/100;
+    longtime.volume=globalaudio;
+    iluihu.volume=globalaudio;
+    yah.volume=globalaudio;
+    molly.volume=globalaudio;
+    many.volume=globalaudio;
+    music.volume=globalaudio;
+    console.log(globalaudio);
+  });
  
   //document.getElementById('segSlide').addEventListener('mouseup',function(){g_circlesSegmentCount=this.value});
 } 
@@ -339,12 +359,6 @@ function setUpWebGL() {
     gl.enable(gl.DEPTH_TEST);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 }
-let dlplaying=false;
-let wlrplaying=false;
-let yahplaying=false;
-let longtime=new Audio("../longtime.mp3");
-let iluihu=new Audio("../iloveuihateu.mp3");
-let yah=new Audio("../yahmean.mp3");
 //2024, molly, u kdan do it too?
 function mouseclick(ev){
   var x = Math.round(camera.eye.elements[0]);
@@ -354,7 +368,6 @@ function mouseclick(ev){
   //console.log(y);
   //console.log(z);
   if(ev.buttons==1){
-    console.log("leftclick")
     console.log(x,y,z);
       if(x < 16 && x >= -16 && y < 16 && y >= -16 && z < 4 && z >= -28) {
         //console.log("existing block: " + this.blocks[x][y][z]);
@@ -362,25 +375,48 @@ function mouseclick(ev){
         console.log("delete");
         if(x+16==16 && z+27==3){
           if(dlplaying==false){
-            longtime.volume=0.5;
             longtime.play();
+            longtime.volume=globalaudio;
             dlplaying=true;
           }
         }
         if(x+16==26 && z+27==3){
           if(wlrplaying==false){
-            iluihu.volume=0.5;
+            iluihu.volume=globalaudio;
             iluihu.play();
             wlrplaying=true;
           }
         }
         if(x+16==5 && z+27==3){
           if(yahplaying==false){
-            yah.volume=0.5;
+            yah.volume=globalaudio;
             yah.play();
             yahplaying=true;
           }
         }
+
+        if(x+16==4 && z+27==8){
+          if(mollyplaying==false){
+            molly.volume=globalaudio;
+            molly.play();
+            mollyplaying=true;
+          }
+        }
+        if(x+16==12 && z+27==6){
+          if(manyplaying==false){
+            many.volume=globalaudio;
+            many.play();
+            manyplaying=true;
+          }
+        }
+        if(x+16==25 && z+27==15){
+          if(musicplaying==false){
+            music.volume=globalaudio;
+            music.play();
+            musicplaying=true;
+          }
+        }
+        
         //console.log("after block: " + this.blocks[x][y][z]);
       }  
   }  
@@ -392,23 +428,44 @@ function mouseclick(ev){
         g_map[x+16][z+27]=1;
         if(x+16==16 && z+27==3){
           if(dlplaying==true){
-            longtime.volume=0.5;
+            longtime.volume=globalaudio;
             longtime.pause();
             dlplaying=false;
           }
         }
         if(x+16==26 && z+27==3){
           if(wlrplaying==true){
-            iluihu.volume=0.5;
+            iluihu.volume=globalaudio;
             iluihu.pause();
             wlrplaying=false;
           }
         }
         if(x+16==5 && z+27==3){
           if(yahplaying==true){
-            yah.volume=0.5;
+            yah.volume=globalaudio;
             yah.pause();
             yahplaying=false;
+          }
+        }
+        if(x+16==4 && z+27==8){
+          if(mollyplaying==true){
+            molly.volume=globalaudio;
+            molly.pause();
+            mollyplaying=false;
+          }
+        }
+        if(x+16==12 && z+27==6){
+          if(manyplaying==true){
+            many.volume=globalaudio;
+            many.pause();
+            manyplaying=false;
+          }
+        }
+        if(x+16==25 && z+27==15){
+          if(musicplaying==true){
+            music.volume=globalaudio;
+            music.pause();
+            musicplaying=false;
           }
         }
 
@@ -428,9 +485,10 @@ function main() {
   document.onkeydown = keydown;
   document.onkeyup = keyup;
   initTextures();
-  document.addEventListener('mousedown', mouseclick);
+  //document.addEventListener('mousedown', mouseclick);
   // Register function (event handler) to be called on a mouse press
-  canvas.onclick=mouseclick;
+  canvas.addEventListener('mousedown',mouseclick);
+  canvas.addEventListener('contextmenu', mouseclick);
   canvas.onmousemove = function (ev) { 
     if (ev.buttons == 1) {
       freecam(ev, 1);
@@ -631,9 +689,9 @@ var g_map=[
    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
-   [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+   [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-   [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+   [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
