@@ -359,7 +359,6 @@ function setUpWebGL() {
     gl.enable(gl.DEPTH_TEST);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 }
-//2024, molly, u kdan do it too?
 function mouseclick(ev){
   var x = Math.round(camera.eye.elements[0]);
   var y = Math.round(camera.eye.elements[1]);
@@ -369,25 +368,25 @@ function mouseclick(ev){
   //console.log(z);
   if(ev.buttons==1){
     console.log(x,y,z);
-      if(x < 16 && x >= -16 && y < 16 && y >= -16 && z < 4 && z >= -28) {
+      if(x < 16 && x >= -16  &&y==0&& z < 4 && z >= -28) {
         //console.log("existing block: " + this.blocks[x][y][z]);
         g_map[x+16][z+27]=0;
         console.log("delete");
-        if(x+16==16 && z+27==3){
+        if(x+16==16 && z+27==3 && y==0){
           if(dlplaying==false){
             longtime.play();
             longtime.volume=globalaudio;
             dlplaying=true;
           }
         }
-        if(x+16==26 && z+27==3){
+        if(x+16==26 && z+27==3 && y==0){
           if(wlrplaying==false){
             iluihu.volume=globalaudio;
             iluihu.play();
             wlrplaying=true;
           }
         }
-        if(x+16==5 && z+27==3){
+        if(x+16==5 && z+27==3&& y==0){
           if(yahplaying==false){
             yah.volume=globalaudio;
             yah.play();
@@ -395,83 +394,93 @@ function mouseclick(ev){
           }
         }
 
-        if(x+16==4 && z+27==8){
+        if(x+16==4 && z+27==8&& y==0){
           if(mollyplaying==false){
             molly.volume=globalaudio;
             molly.play();
             mollyplaying=true;
           }
         }
-        if(x+16==12 && z+27==6){
+        if(x+16==12 && z+27==6&& y==0){
           if(manyplaying==false){
             many.volume=globalaudio;
             many.play();
             manyplaying=true;
           }
         }
-        if(x+16==25 && z+27==15){
+        if(x+16==25 && z+27==15&& y==0){
           if(musicplaying==false){
             music.volume=globalaudio;
             music.play();
             musicplaying=true;
           }
         }
+       
         
         //console.log("after block: " + this.blocks[x][y][z]);
       }  
+      if(x < 16 && x >= -16 &&y!=0&& z < 4 && z >= -28){
+        console.log(g_builtblocks);
+        console.log('delete please');
+        g_builtblocks.splice(g_builtblocks.indexOf([x,y,z],1));
+      }
+      console.log(g_builtblocks);
   }  
   if(ev.buttons==2){
     console.log("rightlcick")
     console.log(x,y,z);
-      if(x < 16 && x >= -16 && y < 16 && y >= -16 && z < 4 && z >= -28) {
+      if(x < 16 && x >= -16 &&y==0&& z < 4 && z >= -28) {
         //console.log("existing block: " + this.blocks[x][y][z]);
         g_map[x+16][z+27]=1;
-        if(x+16==16 && z+27==3){
+        if(x+16==16 && z+27==3&& y==0){
           if(dlplaying==true){
             longtime.volume=globalaudio;
             longtime.pause();
             dlplaying=false;
           }
         }
-        if(x+16==26 && z+27==3){
+        if(x+16==26 && z+27==3&& y==0){
           if(wlrplaying==true){
             iluihu.volume=globalaudio;
             iluihu.pause();
             wlrplaying=false;
           }
         }
-        if(x+16==5 && z+27==3){
+        if(x+16==5 && z+27==3&& y==0){
           if(yahplaying==true){
             yah.volume=globalaudio;
             yah.pause();
             yahplaying=false;
           }
         }
-        if(x+16==4 && z+27==8){
+        if(x+16==4 && z+27==8&& y==0){
           if(mollyplaying==true){
             molly.volume=globalaudio;
             molly.pause();
             mollyplaying=false;
           }
         }
-        if(x+16==12 && z+27==6){
+        if(x+16==12 && z+27==6&& y==0){
           if(manyplaying==true){
             many.volume=globalaudio;
             many.pause();
             manyplaying=false;
           }
         }
-        if(x+16==25 && z+27==15){
+        if(x+16==25 && z+27==15&& y==0){
           if(musicplaying==true){
             music.volume=globalaudio;
             music.pause();
             musicplaying=false;
           }
         }
-
-        console.log("BUILD");
         //console.log("after block: " + this.blocks[x][y][z]);
       }    
+      if(x < 16 && x >= -16 &&y!=0&& z < 4 && z >= -28){
+        g_builtblocks.push([x,y,z]);
+      }
+      console.log(g_builtblocks);
+      console.log("BUILD");
 }
 };
 
@@ -488,7 +497,7 @@ function main() {
   //document.addEventListener('mousedown', mouseclick);
   // Register function (event handler) to be called on a mouse press
   canvas.addEventListener('mousedown',mouseclick);
-  canvas.addEventListener('contextmenu', mouseclick);
+  //canvas.addEventListener('contextmenu', mouseclick);
   canvas.onmousemove = function (ev) { 
     if (ev.buttons == 1) {
       freecam(ev, 1);
@@ -551,7 +560,7 @@ function updateAnimationAngles(){
 
 var firstCoords = [2, 2];
 var prevCords = [0, 0];
-//from hall of famehttps://people.ucsc.edu/~jkohls/pa3/virtualWorld.html
+//from hall of fame https://people.ucsc.edu/~jkohls/pa3/virtualWorld.html
 function freecam(ev) {
   let [x, y] = CoordinatesEconvertventToGL(ev);
 
@@ -569,6 +578,15 @@ function freecam(ev) {
     current_dir_x = 2;
     camera.panLeft(Math.abs(prevCords[0] - x) * 60);
     //console.log("x decrease");
+  }
+
+  if (prevCords[1] < y) {
+    camera.panUp(Math.abs(prevCords[1] - y));
+    current_dir_y = 1;
+  } else if (prevCords[1] > y) {
+    current_dir_y = 2;
+    //console.log("y decrease");
+    camera.panDown(Math.abs(prevCords[1] - y));
   }
   prevCords[0] = x;
   prevCords[1] = y;
@@ -664,6 +682,8 @@ var g_eye=[0,0,3];
 var g_at=[0,0,-100];
 var g_up=[0,1,0];
 var camera;
+//idea of having array of builtblocks form https://people.ucsc.edu/~jwdicker/Asgn3/BlockyWorld.html
+var g_builtblocks=[];
 var g_map=[
    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -733,6 +753,14 @@ function drawMap(){
         }
       }
     }
+  }
+  for(j=0;j<g_builtblocks.length;j++){
+    var map=new Cube();
+    map.color=[1.0,0.0,0.0,1.0];
+    map.textureNum=4;
+    //console.log(type(g_builtblocks[j].elements[1]));
+    map.matrix.translate(g_builtblocks[j][0]-0.5,-0.5+g_builtblocks[j][1],g_builtblocks[j][2]-0.5);
+    map.renderfastuv();
   }
 }
 function renderAllShapes(){

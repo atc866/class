@@ -80,5 +80,12 @@ class Camera{
       eyecopy.set(this.eye);
       this.at.set(eyecopy.add(f_prime));
    }
+   //panup and down taken from https://people.ucsc.edu/~jbrowne2/asgn3/World.html
+   panUp(deg){
+      this.at.elements[1]+=deg;
+  }
+  panDown(deg){
+      this.at.elements[1]-=deg;
+  }
    
 }
