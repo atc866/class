@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import {OBJLoader} from 'three/addons/loaders/OBJLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
+import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 function main() {
 
     const canvas = document.querySelector( '#c' );
@@ -11,13 +13,50 @@ function main() {
     const near = 0.1;
     const far = 7;
     const camera = new THREE.PerspectiveCamera( fov, aspect, near, far );
-    camera.position.set(2,1,4);
+    camera.position.set(2,1,5);
 
+
+    class MinMaxGUIHelper {
+      constructor(obj, minProp, maxProp, minDif) {
+        this.obj = obj;
+        this.minProp = minProp;
+        this.maxProp = maxProp;
+        this.minDif = minDif;
+      }
+      get min() {
+        return this.obj[this.minProp];
+      }
+      set min(v) {
+        this.obj[this.minProp] = v;
+        this.obj[this.maxProp] = Math.max(this.obj[this.maxProp], v + this.minDif);
+      }
+      get max() {
+        return this.obj[this.maxProp];
+      }
+      set max(v) {
+        this.obj[this.maxProp] = v;
+        this.min = this.min;  // this will call the min setter
+      }
+    }
+
+    function updateCamera() {
+      camera.updateProjectionMatrix();
+    }
+     
+    const gui = new GUI();
+    gui.add(camera, 'fov', 1, 180).onChange(updateCamera);
+    const minMaxGUIHelper = new MinMaxGUIHelper(camera, 'near', 'far', 0.1);
+    gui.add(minMaxGUIHelper, 'min', 0.1, 50, 0.1).name('near').onChange(updateCamera);
+    gui.add(minMaxGUIHelper, 'max', 0.1, 50, 0.1).name('far').onChange(updateCamera);
+    const controls = new OrbitControls( camera, canvas );
+    controls.target.set(2,1,4);
+    controls.update();
     const scene = new THREE.Scene();
     const color = 0xFFFFFF;
     const intensity = 3;
     const light = new THREE.DirectionalLight(color, intensity);
     light.position.set(0, 2, 4);
+
     scene.add(light);
     //cube texture stuff
     const loader=new THREE.TextureLoader();
@@ -121,7 +160,5 @@ mtlLoader.load('../resources/cup_of_tea.mtl', (mtl) => {
     }
     requestAnimationFrame(render);
 }
-
-
 
 main();
