@@ -11,11 +11,21 @@ function main() {
     const fov = 75;
     const aspect = 2; // the canvas default
     const near = 0.1;
-    const far = 7;
+    const far = 100;
     const camera = new THREE.PerspectiveCamera( fov, aspect, near, far );
-    camera.position.set(2,1,5);
-
-
+    camera.position.z=3;
+    class ColorGUIHelper {
+      constructor(object, prop) {
+        this.object = object;
+        this.prop = prop;
+      }
+      get value() {
+        return `#${this.object[this.prop].getHexString()}`;
+      }
+      set value(hexString) {
+        this.object[this.prop].set(hexString);
+      }
+    }
     class MinMaxGUIHelper {
       constructor(obj, minProp, maxProp, minDif) {
         this.obj = obj;
@@ -49,15 +59,10 @@ function main() {
     gui.add(minMaxGUIHelper, 'min', 0.1, 50, 0.1).name('near').onChange(updateCamera);
     gui.add(minMaxGUIHelper, 'max', 0.1, 50, 0.1).name('far').onChange(updateCamera);
     const controls = new OrbitControls( camera, canvas );
-    controls.target.set(2,1,4);
+    controls.target.set(0,0,0);
     controls.update();
     const scene = new THREE.Scene();
-    const color = 0xFFFFFF;
-    const intensity = 3;
-    const light = new THREE.DirectionalLight(color, intensity);
-    light.position.set(0, 2, 4);
-
-    scene.add(light);
+    //scene.background=new THREE.Color('black');
     //cube texture stuff
     const loader=new THREE.TextureLoader();
     function loadColorTexture( path ) {
@@ -119,9 +124,125 @@ function main() {
         return cone;
     }
     const cones=[makeInstanceCone(geometrycone,0xff00a4,-2)];
+//importing 3d model
+const mtlLoader = new MTLLoader();
+const objLoader= new OBJLoader();
+mtlLoader.load('../resources/cup_of_tea.mtl', (mtl) => {
+  mtl.preload();
+  objLoader.setMaterials(mtl);
+  objLoader.load('../resources/cup_of_tea.obj', (object) => {
+    object.position.x=5;
+    object.position.y=-1;
+    scene.add(object);
+  });
+});
+//plane thing?
+  {
+
+    const planeSize = 40;
+    const loaderplane = new THREE.TextureLoader();
+    const textureplane = loaderplane.load('../resources/checker.png');
+    textureplane.wrapS = THREE.RepeatWrapping;
+    textureplane.wrapT = THREE.RepeatWrapping;
+    textureplane.magFilter = THREE.NearestFilter;
+    textureplane.colorSpace = THREE.SRGBColorSpace;
+    const repeats = planeSize / 2;
+    textureplane.repeat.set(repeats, repeats);
+    const planeGeo = new THREE.PlaneGeometry(planeSize, planeSize);
+    const planeMat = new THREE.MeshPhongMaterial({
+      map: textureplane,
+      side: THREE.DoubleSide,
+    });
+    const meshplane = new THREE.Mesh(planeGeo, planeMat);
+    meshplane.rotation.x = Math.PI * -.5;
+    scene.add(meshplane);
+  };
+  //lightingambient
+  const color = 0xFFFFFF;
+  const intensity = 1;
+  const light = new THREE.AmbientLight(color, intensity);
+  scene.add(light);
+  gui.addColor(new ColorGUIHelper(light, 'color'), 'value').name('color');
+  gui.add(light, 'intensity', 0, 2, 0.01);
+  //directional light
+  const dircolor = 0xFFFFFF;
+  const dirintensity = 1;
+  const dirlight = new THREE.DirectionalLight(dircolor, dirintensity);
+  dirlight.position.set(0, 10, 0);
+  dirlight.target.position.set(-5, 0, 0);
+  scene.add(dirlight);
+  scene.add(dirlight.target);
+  gui.addColor(new ColorGUIHelper(dirlight, 'color'), 'value').name('color');
+  gui.add(dirlight, 'intensity', 0, 2, 0.01);
+  gui.add(dirlight.target.position, 'x', -10, 10);
+  gui.add(dirlight.target.position, 'z', -10, 10);
+  gui.add(dirlight.target.position, 'y', 0, 10);
+  const dirhelper = new THREE.DirectionalLightHelper(dirlight);
+  scene.add(dirhelper);
+  function makeXYZGUI(gui, vector3, name, onChangeFn) {
+    const folder = gui.addFolder(name);
+    folder.add(vector3, 'x', -10, 10).onChange(onChangeFn);
+    folder.add(vector3, 'y', 0, 10).onChange(onChangeFn);
+    folder.add(vector3, 'z', -10, 10).onChange(onChangeFn);
+    folder.open();
+  }
+  makeXYZGUI(gui, dirlight.position, 'position', updateLight);
+  makeXYZGUI(gui, dirlight.target.position, 'target', updateLight);
+  function updateLight(){
+    dirlight.target.updateMatrixWorld();
+    dirhelper.update();
+  }
+  updateLight();
+  
+
+  //pointlight
+  const pointcolor=0xFFFFFF;
+  const pointintensity=150;
+  const pointlight=new THREE.PointLight(pointcolor, pointintensity);
+  pointlight.position.set(0,10,0);
+  scene.add(pointlight);
+  const pointhelper = new THREE.PointLightHelper(pointlight);
+  scene.add(pointhelper);
+  function updatepointlight(){
+    pointhelper.update();
+  }
+    gui.addColor(new ColorGUIHelper(pointlight, 'color'), 'value').name('color');
+    gui.add(pointlight, 'intensity', 0, 150, 1);
+    gui.add(pointlight, 'distance', 0, 40).onChange(updatepointlight);
+    makeXYZGUI(gui, pointlight.position, 'position', updatepointlight);
+    //background thing
+  const backgroundloader = new THREE.TextureLoader();
+  const backgroundtexture = backgroundloader.load(
+    '../resources/background.jpg',
+    () => {
+      backgroundtexture.mapping = THREE.EquirectangularReflectionMapping;
+      backgroundtexture.colorSpace = THREE.SRGBColorSpace;
+      scene.background = backgroundtexture;
+    });
+    function resizeRendererToDisplaySize( renderer ) {
+
+      const canvas = renderer.domElement;
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
+      const needResize = canvas.width !== width || canvas.height !== height;
+      if ( needResize ) {
+  
+        renderer.setSize( width, height, false );
+  
+      }
+  
+      return needResize;
+  
+    }
+  
     function render(time) {
         time *= 0.001;  // convert time to seconds
-       
+    
+        if(resizeRendererToDisplaySize(renderer)){
+          const canvas=renderer.domElement;
+          camera.aspect=canvas.clientWidth/canvas.clientHeight;
+          camera.updateProjectionMatrix();
+        }
         cubes.forEach((cube, ndx) => {
           const speed = 1 + ndx * .1;
           const rot = time * speed;
@@ -139,26 +260,11 @@ function main() {
         const rot = time * speed;
         cone.rotation.x = rot;
         cone.rotation.y = rot;
-});
-//importing 3d model
-const mtlLoader = new MTLLoader();
-const objLoader= new OBJLoader();
-mtlLoader.load('../resources/cup_of_tea.mtl', (mtl) => {
-  mtl.preload();
-  objLoader.setMaterials(mtl);
-  objLoader.load('../resources/cup_of_tea.obj', (object) => {
-    object.position.x=5;
-    object.position.y=-1;
-    scene.add(object);
-  });
-});
-
-
+    });
     renderer.render(scene, camera);
     requestAnimationFrame(render);
 
     }
     requestAnimationFrame(render);
-}
-
+  }
 main();
