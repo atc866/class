@@ -13,7 +13,9 @@ function main() {
     const near = 0.1;
     const far = 100;
     const camera = new THREE.PerspectiveCamera( fov, aspect, near, far );
-    camera.position.z=3;
+    camera.position.x=0;
+    camera.position.y=10;
+    camera.position.z=20;
     class ColorGUIHelper {
       constructor(object, prop) {
         this.object = object;
@@ -84,46 +86,53 @@ function main() {
     const boxDepth = 1;
     const geometry = new THREE.BoxGeometry( boxWidth, boxHeight, boxDepth );
 
-    function makeInstance(geometry, materials, x) {
+    function makeInstance(geometry, materials, x,y,z) {
 
        
         const cube = new THREE.Mesh(geometry, materials);
         scene.add(cube);
        
         cube.position.x = x;
+        cube.position.y=y;
+        cube.position.z=z;
+
        
         return cube;
     }
     const cubes = [
-        makeInstance(geometry, materials,  0),
+        makeInstance(geometry, materials,  0,1,1),
     ];
     
     //sphere stuff
     const geometrysphere = new THREE.SphereGeometry( 1, 16, 32 ); 
-    function makeInstanceSphere(geometry, color, x) {
+    function makeInstanceSphere(geometry, color, x,y,z) {
         const material = new THREE.MeshPhongMaterial({color});
         
         const sphere= new THREE.Mesh(geometry, material);
         scene.add(sphere);
        
         sphere.position.x = x;
+        sphere.position.y=y;
+        sphere.position.z=z;
        
         return sphere;
     }
-    const spheres=[makeInstanceSphere(geometrysphere,0xffff00,2)];
+    const spheres=[makeInstanceSphere(geometrysphere,0xffff00,-3,1,1)];
     //cone stuff
     const geometrycone=new THREE.ConeGeometry(1,1,32,1);
-    function makeInstanceCone(geometry, color, x) {
+    function makeInstanceCone(geometry, color, x,y,z) {
         const material = new THREE.MeshPhongMaterial({color});
         
         const cone= new THREE.Mesh(geometry, material);
         scene.add(cone);
        
         cone.position.x = x;
+        cone.position.y=y;
+        cone.position.z=z;
        
         return cone;
     }
-    const cones=[makeInstanceCone(geometrycone,0xff00a4,-2)];
+    const cones=[makeInstanceCone(geometrycone,0xff00a4,3,1,1)];
 //importing 3d model
 const mtlLoader = new MTLLoader();
 const objLoader= new OBJLoader();
@@ -132,10 +141,50 @@ mtlLoader.load('../resources/cup_of_tea.mtl', (mtl) => {
   objLoader.setMaterials(mtl);
   objLoader.load('../resources/cup_of_tea.obj', (object) => {
     object.position.x=5;
-    object.position.y=-1;
+    object.position.y=1;
+    object.position.z=1
     scene.add(object);
   });
 });
+//build house thing?
+var housething=
+[[1,1,1,1,0],
+[1,0,0,0,0],
+[1,0,0,0,0],
+[1,0,0,0,0],
+[1,0,0,0,0],
+[1,0,0,0,0],
+[1,0,0,0,0],
+[1,0,0,0,0],
+[1,0,0,0,0],
+[1,0,0,0,0],
+[1,0,0,0,0],
+[1,0,0,0,0],
+[1,0,0,0,0],
+[1,0,0,0,0],
+[1,0,0,0,0],
+[1,0,0,0,0],
+[1,0,0,0,0],
+[1,0,0,0,0],
+[1,0,0,0,0],
+[1,1,1,1,0]]
+
+var musicmaterialthing=[new THREE.MeshBasicMaterial({map: loadColorTexture('../resources/music.jpg')}),
+        new THREE.MeshBasicMaterial({map: loadColorTexture('../resources/music.jpg')}),
+        new THREE.MeshBasicMaterial({map: loadColorTexture('../resources/music.jpg')}),
+        new THREE.MeshBasicMaterial({map: loadColorTexture('../resources/music.jpg')}),
+        new THREE.MeshBasicMaterial({map: loadColorTexture('../resources/music.jpg')}),
+        new THREE.MeshBasicMaterial({map: loadColorTexture('../resources/music.jpg')}),];
+for(let height=0;height<5;height++){
+  for(let x=0;x<20;x++){
+    for(let y=0;y<5;y++){
+      if(housething[x][y]==1){
+        makeInstance(geometry,musicmaterialthing,x-8,height,y-3);
+      }
+    }
+  }
+}
+
 //plane thing?
   {
 
