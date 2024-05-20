@@ -207,27 +207,13 @@ for(let height=0;height<5;height++){
     scene.add(meshplane);
   };
   //lightingambient
-  const color = 0xFFFFFF;
-  const intensity = 1;
+  const color = 0x231F1F;
+  const intensity = 0.5;
   const light = new THREE.AmbientLight(color, intensity);
   scene.add(light);
   gui.addColor(new ColorGUIHelper(light, 'color'), 'value').name('color');
-  gui.add(light, 'intensity', 0, 2, 0.01);
+  gui.add(light, 'intensity', 0, 5, 0.01);
   //directional light
-  const dircolor = 0xFFFFFF;
-  const dirintensity = 1;
-  const dirlight = new THREE.DirectionalLight(dircolor, dirintensity);
-  dirlight.position.set(0, 10, 0);
-  dirlight.target.position.set(-5, 0, 0);
-  scene.add(dirlight);
-  scene.add(dirlight.target);
-  gui.addColor(new ColorGUIHelper(dirlight, 'color'), 'value').name('color');
-  gui.add(dirlight, 'intensity', 0, 2, 0.01);
-  gui.add(dirlight.target.position, 'x', -10, 10);
-  gui.add(dirlight.target.position, 'z', -10, 10);
-  gui.add(dirlight.target.position, 'y', 0, 10);
-  const dirhelper = new THREE.DirectionalLightHelper(dirlight);
-  scene.add(dirhelper);
   function makeXYZGUI(gui, vector3, name, onChangeFn) {
     const folder = gui.addFolder(name);
     folder.add(vector3, 'x', -10, 10).onChange(onChangeFn);
@@ -235,20 +221,30 @@ for(let height=0;height<5;height++){
     folder.add(vector3, 'z', -10, 10).onChange(onChangeFn);
     folder.open();
   }
-  makeXYZGUI(gui, dirlight.position, 'position', updateLight);
-  makeXYZGUI(gui, dirlight.target.position, 'target', updateLight);
+  const dircolor = 0xFB0404;
+  const dirintensity = 3.5;
+  const dirlight = new THREE.DirectionalLight(dircolor, dirintensity);
+  dirlight.position.set(-7.7,6.8,2.14);
+  dirlight.target.position.set(8.28,0,1.64);
+  scene.add(dirlight);
+  scene.add(dirlight.target);
+  const dirhelper = new THREE.DirectionalLightHelper(dirlight);
+  scene.add(dirhelper);
   function updateLight(){
     dirlight.target.updateMatrixWorld();
     dirhelper.update();
   }
   updateLight();
-  
+  gui.addColor(new ColorGUIHelper(dirlight,'color'),'value').name('color');
+  gui.add(dirlight,'intensity',0,5,0.01);
+  makeXYZGUI(gui, dirlight.position, 'position', updateLight);
+  makeXYZGUI(gui, dirlight.target.position, 'target', updateLight);
 
   //pointlight
-  const pointcolor=0xFFFFFF;
+  const pointcolor=0x23F207;
   const pointintensity=150;
   const pointlight=new THREE.PointLight(pointcolor, pointintensity);
-  pointlight.position.set(0,10,0);
+  pointlight.position.set(4.1,6.93,0);
   scene.add(pointlight);
   const pointhelper = new THREE.PointLightHelper(pointlight);
   scene.add(pointhelper);
