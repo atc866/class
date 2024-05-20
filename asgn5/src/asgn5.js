@@ -85,22 +85,20 @@ function main() {
     const boxHeight = 1;
     const boxDepth = 1;
     const geometry = new THREE.BoxGeometry( boxWidth, boxHeight, boxDepth );
-
     function makeInstance(geometry, materials, x,y,z) {
 
-       
+
         const cube = new THREE.Mesh(geometry, materials);
         scene.add(cube);
        
         cube.position.x = x;
         cube.position.y=y;
         cube.position.z=z;
-
        
         return cube;
     }
     const cubes = [
-        makeInstance(geometry, materials,  0,1,1),
+        makeInstance(geometry, materials,  0,1,1,1,1,1),
     ];
     
     //sphere stuff
@@ -169,17 +167,13 @@ var housething=
 [1,0,0,0,0],
 [1,1,1,1,0]]
 
-var musicmaterialthing=[new THREE.MeshPhongMaterial({map: loadColorTexture('../resources/music.jpg')}),
-        new THREE.MeshPhongMaterial({map: loadColorTexture('../resources/music.jpg')}),
-        new THREE.MeshPhongMaterial({map: loadColorTexture('../resources/music.jpg')}),
-        new THREE.MeshPhongMaterial({map: loadColorTexture('../resources/music.jpg')}),
-        new THREE.MeshPhongMaterial({map: loadColorTexture('../resources/music.jpg')}),
-        new THREE.MeshPhongMaterial({map: loadColorTexture('../resources/music.jpg')}),];
+var musicmaterialthing=new THREE.MeshPhongMaterial({map: loadColorTexture('../resources/music.jpg')});
+var musicboxgeom= new THREE.BoxGeometry(3,3,3);
 for(let height=0;height<5;height++){
   for(let x=0;x<20;x++){
     for(let y=0;y<5;y++){
       if(housething[x][y]==1){
-        makeInstance(geometry,musicmaterialthing,x-8,height,y-3);
+        makeInstance(musicboxgeom,musicmaterialthing,(x-8)*3,height*3,(y-3)*3,);
       }
     }
   }
@@ -188,7 +182,7 @@ for(let height=0;height<5;height++){
 //plane thing?
   {
 
-    const planeSize = 40;
+    const planeSize = 100;
     const loaderplane = new THREE.TextureLoader();
     const textureplane = loaderplane.load('../resources/checker.png');
     textureplane.wrapS = THREE.RepeatWrapping;
