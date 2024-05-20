@@ -169,12 +169,12 @@ var housething=
 [1,0,0,0,0],
 [1,1,1,1,0]]
 
-var musicmaterialthing=[new THREE.MeshBasicMaterial({map: loadColorTexture('../resources/music.jpg')}),
-        new THREE.MeshBasicMaterial({map: loadColorTexture('../resources/music.jpg')}),
-        new THREE.MeshBasicMaterial({map: loadColorTexture('../resources/music.jpg')}),
-        new THREE.MeshBasicMaterial({map: loadColorTexture('../resources/music.jpg')}),
-        new THREE.MeshBasicMaterial({map: loadColorTexture('../resources/music.jpg')}),
-        new THREE.MeshBasicMaterial({map: loadColorTexture('../resources/music.jpg')}),];
+var musicmaterialthing=[new THREE.MeshPhongMaterial({map: loadColorTexture('../resources/music.jpg')}),
+        new THREE.MeshPhongMaterial({map: loadColorTexture('../resources/music.jpg')}),
+        new THREE.MeshPhongMaterial({map: loadColorTexture('../resources/music.jpg')}),
+        new THREE.MeshPhongMaterial({map: loadColorTexture('../resources/music.jpg')}),
+        new THREE.MeshPhongMaterial({map: loadColorTexture('../resources/music.jpg')}),
+        new THREE.MeshPhongMaterial({map: loadColorTexture('../resources/music.jpg')}),];
 for(let height=0;height<5;height++){
   for(let x=0;x<20;x++){
     for(let y=0;y<5;y++){
