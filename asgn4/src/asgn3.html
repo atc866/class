@@ -1,0 +1,70 @@
+ <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="utf-8" />
+     <title>Draw a point (1)</title>
+   </head>
+    <body onload="main()">
+          
+          
+      <canvas class="canvas" id="webgl" width="400" height="400"></canvas>
+      <br>
+      <br>
+      <p id="numdot">XXX</p>
+      sound<input type="range" min="1" max="100" value="30" class="slider" id="sound">
+      <br>
+      <button type="button" id="normalon">normal on</button>
+      <button type="button" id="normaloff">normal off</button>
+      <br>
+      light x<input type="range" min="-250" max="250" value="0" class="slider" id="lightslidex">
+      light y<input type="range" min="-250" max="250" value="100" class="slider" id="lightslidey">
+      light z<input type="range" min="-250" max="250" value="200" class="slider" id="lightslidez">
+            w-move forward
+            <br>
+            a-move left
+            <br>
+            s-move back
+            <br>
+            d-move right
+            <br>
+            q->pan camera left, e->pan camera right
+            <br>right click->build blocks, left click->build blocks
+            <br> hold leftclick to pan camera
+            <br>
+            break the album cover blocks throughout the maps (not the music blocks) to play my favorite song from carti's ablums!
+            <br>
+            can build the block to pause the music.
+            <br>
+            There are also random music blocks throughout the map (not the walls but in the three lanes) that may play some of his unreleased music if you break them!
+            <br>
+            also enjoy this photoshop project that I did for another class as the sky
+            <br>
+
+            
+       
+      
+      <script type="importmap">
+        {
+          "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/"
+          }
+        }
+      </script>
+      <script src="../lib/webgl-utils.js"></script>
+      <script src="../lib/webgl-debug.js"></script>
+     <script src="../lib/cuon-utils.js"></script>
+     <script src="../lib/cuon-matrix-cse160.js"></script>
+     <script src="Triangle.js"></script>
+     <script src="Point.js"></script>
+     <script src="Circle.js"></script>
+     <script src="sphere.js"></script>
+     <script src="cone.js"></script>
+     <script src="cube.js"></script>
+     <script src="camera.js"></script>
+      <script src="asgn3.js"></script>
+   </body>
+   <br>
+   Andrew Chu antchu@ucsc.edu
+ </html>
+ 
