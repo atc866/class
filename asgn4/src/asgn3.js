@@ -4,7 +4,7 @@ var VSHADER_SOURCE =
 'precision mediump float; attribute vec2 a_UV; attribute vec3 a_Normal; varying vec2 v_UV; varying vec3 v_Normal; varying vec4 v_VertPos; uniform mat4 u_ViewMatrix; uniform mat4 u_ProjectionMatrix; uniform mat4 u_ModelMatrix; uniform mat4 u_NormalMatrix; attribute vec4 a_Position; uniform mat4 u_GlobalRotateMatrix; void main() {gl_Position = u_ProjectionMatrix*u_ViewMatrix*u_GlobalRotateMatrix*u_ModelMatrix*a_Position; v_UV=a_UV; v_Normal=normalize(vec3(u_NormalMatrix*vec4(a_Normal,1))); v_VertPos=u_ModelMatrix*a_Position;}';
 
 // Fragment shader program
-var FSHADER_SOURCE ='precision mediump float;varying vec2 v_UV; varying vec3 v_Normal; uniform vec4 u_FragColor; uniform sampler2D u_Sampler0; uniform sampler2D u_Sampler1; uniform sampler2D u_Sampler2;uniform sampler2D u_Sampler3;uniform sampler2D u_Sampler4;uniform int u_whichTexture; uniform vec3 u_lightPos; uniform vec3 u_cameraPos; varying vec4 v_VertPos; uniform bool u_lightOn; void main() {if(u_whichTexture==-3){gl_FragColor=vec4((v_Normal+1.0)/2.0,1.0);}else if(u_whichTexture==-2){gl_FragColor=u_FragColor;}else if (u_whichTexture==-1){gl_FragColor=vec4(v_UV,1.0,1.0);}else if (u_whichTexture==0){gl_FragColor=texture2D(u_Sampler0,v_UV);}else if (u_whichTexture==1){gl_FragColor=texture2D(u_Sampler1,v_UV);}else if (u_whichTexture==2){gl_FragColor=texture2D(u_Sampler2,v_UV);}else if (u_whichTexture==3){gl_FragColor=texture2D(u_Sampler3,v_UV);}else if (u_whichTexture==4){gl_FragColor=texture2D(u_Sampler4,v_UV);} else{gl_FragColor=vec4(1,0.2,0.2,1);} vec3 lightVector=u_lightPos-vec3(v_VertPos); float r=length(lightVector); vec3 L=normalize(lightVector); vec3 N=normalize(v_Normal); float nDotL=max(dot(N,L),0.0); vec3 R=reflect(-L,N); vec3 E=normalize(u_cameraPos-vec3(v_VertPos)); float specular=pow(max(dot(E,R),0.0),10.0)*0.5; vec3 diffuse=vec3(gl_FragColor)*nDotL*0.7; vec3 ambient= vec3(gl_FragColor)*0.3; if(u_lightOn) {if(u_whichTexture == 0) {gl_FragColor = vec4(specular+diffuse+ambient, 1.0);} else {gl_FragColor = vec4(diffuse+ambient, 1.0);}}}';
+var FSHADER_SOURCE ='precision mediump float;varying vec2 v_UV; varying vec3 v_Normal; uniform vec4 u_FragColor; uniform sampler2D u_Sampler0; uniform sampler2D u_Sampler1; uniform sampler2D u_Sampler2;uniform sampler2D u_Sampler3;uniform sampler2D u_Sampler4;uniform int u_whichTexture; uniform vec3 u_lightPos; uniform vec3 u_cameraPos; varying vec4 v_VertPos; uniform bool u_lightOn; uniform vec3 u_colorslide; void main() {if(u_whichTexture==-3){gl_FragColor=vec4((v_Normal+1.0)/2.0,1.0);}else if(u_whichTexture==-2){gl_FragColor=u_FragColor;}else if (u_whichTexture==-1){gl_FragColor=vec4(v_UV,1.0,1.0);}else if (u_whichTexture==0){gl_FragColor=texture2D(u_Sampler0,v_UV);}else if (u_whichTexture==1){gl_FragColor=texture2D(u_Sampler1,v_UV);}else if (u_whichTexture==2){gl_FragColor=texture2D(u_Sampler2,v_UV);}else if (u_whichTexture==3){gl_FragColor=texture2D(u_Sampler3,v_UV);}else if (u_whichTexture==4){gl_FragColor=texture2D(u_Sampler4,v_UV);} else{gl_FragColor=vec4(1,0.2,0.2,1);} vec3 lightVector=u_lightPos-vec3(v_VertPos); float r=length(lightVector); vec3 L=normalize(lightVector); vec3 N=normalize(v_Normal); float nDotL=max(dot(N,L),0.0); vec3 R=reflect(-L,N); vec3 E=normalize(u_cameraPos-vec3(v_VertPos)); float specular=pow(max(dot(E,R),0.0),10.0)*0.5; vec3 diffuse=vec3(gl_FragColor)*nDotL*0.7; vec3 ambient= vec3(gl_FragColor)*0.3*u_colorslide; if(u_lightOn) {if(u_whichTexture == 0) {gl_FragColor = vec4(specular+diffuse+ambient, 1.0);} else {gl_FragColor = vec4(diffuse+ambient, 1.0);}}}';
 //global variables
 //global variables
 let canvas;
@@ -141,6 +141,12 @@ function connectVariablesToGLSL(){
     console.log('failed to get storage location of u_lighton');
     return;
   }
+  u_colorslide=gl.getUniformLocation(gl.program,'u_colorslide');
+  if(!u_colorslide){
+    console.log('failed to get storage location of u_colorlside');
+    return;
+  }
+  
   console.log(u_lightOn);
   console.log('connected');
   var identityM=new Matrix4();
@@ -177,6 +183,7 @@ let g_wing1animation=false;
 let g_wing2animation=false;
 let g_lightPos=[0,1,-2];
 var g_lightOn=true;
+var g_colorslide=[0,0,0];
 
 //set up actions for the html ui elements
 function addActionForHtmlUI(){
@@ -196,7 +203,9 @@ function addActionForHtmlUI(){
   document.getElementById('lightslidex').addEventListener('mousemove',function(ev){if(ev.buttons==1){g_lightPos[0]=this.value/100; renderAllShapes();}});
   document.getElementById('lightslidey').addEventListener('mousemove',function(ev){if(ev.buttons==1){g_lightPos[1]=this.value/100; renderAllShapes();}});
   document.getElementById('lightslidez').addEventListener('mousemove',function(ev){if(ev.buttons==1){g_lightPos[2]=this.value/100; renderAllShapes();}});
-
+  document.getElementById('redSlide').addEventListener('mouseup',function(){g_colorslide[0]=this.value/100});
+  document.getElementById('greenSlide').addEventListener('mouseup',function(){g_colorslide[1]=this.value/100});
+  document.getElementById('blueSlide').addEventListener('mouseup',function(){g_colorslide[2]=this.value/100});
 } 
 function initTextures() {
 
@@ -853,11 +862,11 @@ function renderAllShapes(){
   sphere.matrix.translate(0,0.5,-3);
   //sphere.normalMatrix.setInverseOf(sphere.matrix).transpose();
   sphere.render();
-
   gl.uniform3f(u_lightPos,g_lightPos[0],g_lightPos[1],g_lightPos[2]);
   gl.uniform3f(u_cameraPos,camera.eye.x,camera.eye.y,camera.eye.z);
+  gl.uniform3f(u_colorslide,g_colorslide[0],g_colorslide[1],g_colorslide[2]);
   gl.uniform1i(u_lightOn, g_lightOn);
-  console.log(u_lightOn);
+  //console.log(u_lightOn);
   var light=new Cube();
   light.color=[2,2,0,1];
   light.matrix.translate(g_lightPos[0],g_lightPos[1],g_lightPos[2]);
