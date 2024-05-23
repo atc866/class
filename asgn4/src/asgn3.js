@@ -1,10 +1,10 @@
 // ColoredPoint.js (c) 2012 matsuda
 // Vertex shader program
 var VSHADER_SOURCE =
-'precision mediump float; attribute vec2 a_UV; attribute vec3 a_Normal; varying vec2 v_UV; varying vec3 v_Normal; varying vec4 v_VertPos; uniform mat4 u_ViewMatrix; uniform mat4 u_ProjectionMatrix; uniform mat4 u_ModelMatrix; attribute vec4 a_Position; uniform mat4 u_GlobalRotateMatrix; void main() {gl_Position = u_ProjectionMatrix*u_ViewMatrix*u_GlobalRotateMatrix*u_ModelMatrix*a_Position; v_UV=a_UV; v_Normal=a_Normal; v_VertPos=u_ModelMatrix*a_Position;}';
+'precision mediump float; attribute vec2 a_UV; attribute vec3 a_Normal; varying vec2 v_UV; varying vec3 v_Normal; varying vec4 v_VertPos; uniform mat4 u_ViewMatrix; uniform mat4 u_ProjectionMatrix; uniform mat4 u_ModelMatrix; uniform mat4 u_NormalMatrix; attribute vec4 a_Position; uniform mat4 u_GlobalRotateMatrix; void main() {gl_Position = u_ProjectionMatrix*u_ViewMatrix*u_GlobalRotateMatrix*u_ModelMatrix*a_Position; v_UV=a_UV; v_Normal=normalize(vec3(u_NormalMatrix*vec4(a_Normal,1))); v_VertPos=u_ModelMatrix*a_Position;}';
 
 // Fragment shader program
-var FSHADER_SOURCE ='precision mediump float;varying vec2 v_UV; varying vec3 v_Normal; uniform vec4 u_FragColor; uniform sampler2D u_Sampler0; uniform sampler2D u_Sampler1; uniform sampler2D u_Sampler2;uniform sampler2D u_Sampler3;uniform sampler2D u_Sampler4;uniform int u_whichTexture; uniform vec3 u_lightPos; varying vec4 v_VertPos; void main() {if(u_whichTexture==-3){gl_FragColor=vec4((v_Normal+1.0)/2.0,1.0);}else if(u_whichTexture==-2){gl_FragColor=u_FragColor;}else if (u_whichTexture==-1){gl_FragColor=vec4(v_UV,1.0,1.0);}else if (u_whichTexture==0){gl_FragColor=texture2D(u_Sampler0,v_UV);}else if (u_whichTexture==1){gl_FragColor=texture2D(u_Sampler1,v_UV);}else if (u_whichTexture==2){gl_FragColor=texture2D(u_Sampler2,v_UV);}else if (u_whichTexture==3){gl_FragColor=texture2D(u_Sampler3,v_UV);}else if (u_whichTexture==4){gl_FragColor=texture2D(u_Sampler4,v_UV);} else{gl_FragColor=vec4(1,0.2,0.2,1);} vec3 lightVector=vec3(v_VertPos)-u_lightPos; float r=length(lightVector);if (r<1.0){gl_FragColor=vec4(1,0,0,1);}else if(r<2.0){gl_FragColor=vec4(0,1,0,1);}}';
+var FSHADER_SOURCE ='precision mediump float;varying vec2 v_UV; varying vec3 v_Normal; uniform vec4 u_FragColor; uniform sampler2D u_Sampler0; uniform sampler2D u_Sampler1; uniform sampler2D u_Sampler2;uniform sampler2D u_Sampler3;uniform sampler2D u_Sampler4;uniform int u_whichTexture; uniform vec3 u_lightPos; uniform vec3 u_cameraPos; varying vec4 v_VertPos; uniform bool u_lightOn; void main() {if(u_whichTexture==-3){gl_FragColor=vec4((v_Normal+1.0)/2.0,1.0);}else if(u_whichTexture==-2){gl_FragColor=u_FragColor;}else if (u_whichTexture==-1){gl_FragColor=vec4(v_UV,1.0,1.0);}else if (u_whichTexture==0){gl_FragColor=texture2D(u_Sampler0,v_UV);}else if (u_whichTexture==1){gl_FragColor=texture2D(u_Sampler1,v_UV);}else if (u_whichTexture==2){gl_FragColor=texture2D(u_Sampler2,v_UV);}else if (u_whichTexture==3){gl_FragColor=texture2D(u_Sampler3,v_UV);}else if (u_whichTexture==4){gl_FragColor=texture2D(u_Sampler4,v_UV);} else{gl_FragColor=vec4(1,0.2,0.2,1);} vec3 lightVector=u_lightPos-vec3(v_VertPos); float r=length(lightVector); vec3 L=normalize(lightVector); vec3 N=normalize(v_Normal); float nDotL=max(dot(N,L),0.0); vec3 R=reflect(-L,N); vec3 E=normalize(u_cameraPos-vec3(v_VertPos)); float specular=pow(max(dot(E,R),0.0),10.0)*0.5; vec3 diffuse=vec3(gl_FragColor)*nDotL*0.7; vec3 ambient= vec3(gl_FragColor)*0.3; if(u_lightOn) {if(u_whichTexture == 0) {gl_FragColor = vec4(specular+diffuse+ambient, 1.0);} else {gl_FragColor = vec4(diffuse+ambient, 1.0);}}}';
 //global variables
 //global variables
 let canvas;
@@ -15,6 +15,7 @@ let u_FragColor;
 let u_Size;
 let u_ModelMatrix;
 let u_GlobalRotateMatrix;
+let u_NormalMatrix;
 let u_Sampler0;
 let u_Sampler1;
 let u_Sampler2;
@@ -38,7 +39,7 @@ let many=new Audio("../2many.mp3")
 let music=new Audio("../2024.mp3");
 let globalaudio=0.3;
 let g_normalon=false;
-
+let u_cameraPos;
 
 
 function connectVariablesToGLSL(){
@@ -125,7 +126,23 @@ function connectVariablesToGLSL(){
     console.log('failed to get storage location of projectionmatrix');
     return;
   }
-
+   u_NormalMatrix=gl.getUniformLocation(gl.program,'u_NormalMatrix');
+   if(!u_NormalMatrix){
+     console.log("failed to get storage location of u_normalmatrix");
+    return;
+   }
+  u_cameraPos=gl.getUniformLocation(gl.program,'u_cameraPos');
+  if(!u_cameraPos){
+    console.log('failed to get storage location of u_camaerapos');
+    return;
+  }
+  u_lightOn=gl.getUniformLocation(gl.program,'u_lightOn');
+  if(!u_lightOn){
+    console.log('failed to get storage location of u_lighton');
+    return;
+  }
+  console.log(u_lightOn);
+  console.log('connected');
   var identityM=new Matrix4();
   gl.uniformMatrix4fv(u_ModelMatrix,false,identityM.elements);
 }
@@ -159,6 +176,7 @@ let g_hatanimation=true;
 let g_wing1animation=false;
 let g_wing2animation=false;
 let g_lightPos=[0,1,-2];
+var g_lightOn=true;
 
 //set up actions for the html ui elements
 function addActionForHtmlUI(){
@@ -173,6 +191,8 @@ function addActionForHtmlUI(){
   });
   document.getElementById('normalon').onclick=function(){g_normalon=true};
   document.getElementById('normaloff').onclick=function(){g_normalon=false};
+  document.getElementById('lighton').onclick=function(){g_lightOn=true};
+  document.getElementById('lightoff').onclick=function(){g_lightOn=false};
   document.getElementById('lightslidex').addEventListener('mousemove',function(ev){if(ev.buttons==1){g_lightPos[0]=this.value/100; renderAllShapes();}});
   document.getElementById('lightslidey').addEventListener('mousemove',function(ev){if(ev.buttons==1){g_lightPos[1]=this.value/100; renderAllShapes();}});
   document.getElementById('lightslidez').addEventListener('mousemove',function(ev){if(ev.buttons==1){g_lightPos[2]=this.value/100; renderAllShapes();}});
@@ -566,6 +586,7 @@ function updateAnimationAngles(){
   if(g_hatanimation){
     g_hatangle=(90*g_seconds);
   }
+  //g_lightPos[0]=Math.cos(g_seconds);
 }
 
 //var g_points = [];  // The array for the position of a mouse press
@@ -803,7 +824,6 @@ function renderAllShapes(){
   // for(var i = 0; i < len; i++) {
   //   g_shapesList[i].render();
   // }
-
   
   var floor=new Cube();
   floor.color=[1.0,0.0,0.0,1.0];
@@ -826,17 +846,24 @@ function renderAllShapes(){
   cubetest.textureNum=0;
   if(g_normalon)cubetest.textureNum=-3;
   cubetest.matrix.translate(-1,-0.5,-2);
+  cubetest.normalMatrix.setInverseOf(cubetest.matrix).transpose();
   cubetest.render();
   var sphere=new Sphere();
-  sphere.render();
   sphere.texture=-3;
   sphere.matrix.translate(0,0.5,-3);
+  //sphere.normalMatrix.setInverseOf(sphere.matrix).transpose();
+  sphere.render();
+
   gl.uniform3f(u_lightPos,g_lightPos[0],g_lightPos[1],g_lightPos[2]);
+  gl.uniform3f(u_cameraPos,camera.eye.x,camera.eye.y,camera.eye.z);
+  gl.uniform1i(u_lightOn, g_lightOn);
+  console.log(u_lightOn);
   var light=new Cube();
   light.color=[2,2,0,1];
   light.matrix.translate(g_lightPos[0],g_lightPos[1],g_lightPos[2]);
-  light.matrix.scale(.1,.1,.1);
-  light.matrix.translate(-0.5,1,-0.5);
+  light.matrix.scale(-0.1,-0.1,-0.1);
+  light.matrix.translate(-0.5,-0.5,-0.5);
+  //light.normalMatrix.setInverseOf(light.matrix).transpose();
   light.render();
 
   drawMap();

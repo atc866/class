@@ -4,6 +4,7 @@ class Cube {
     this.color = [1.0, 1.0, 1.0, 1.0];
     this.matrix = new Matrix4();
     this.textureNum=-2;
+    this.normalMatrix=new Matrix4();
     this.cubeVerts = new Float32Array([
     0,0,0, 1,1,0, 1,0,0,
     0,0,0, 0,1,0, 1,1,0,
@@ -56,6 +57,7 @@ class Cube {
 
     // Pass the matrix to u_ModelMatrix attribute
     gl.uniformMatrix4fv(u_ModelMatrix, false, this.matrix.elements);
+    gl.uniformMatrix4fv(u_NormalMatrix,false,this.normalMatrix.elements);
     //front/back
     drawTriangle3DUVNormal([0,0,0 , 1,1,0, 1,0,0],[1,0 , 0,1, 0,0],[0,0,-1 ,0,0,-1, 0,0,-1]);
     drawTriangle3DUVNormal([0,0,0, 0,1,0, 1,1,0], [1,0, 1,1, 0,1], [0,0, -1,0,0, -1, 0,0, -1]);
