@@ -57,10 +57,8 @@ function main() {
     }
      
     const gui = new GUI();
-    gui.add(camera, 'fov', 1, 180).onChange(updateCamera);
-    const minMaxGUIHelper = new MinMaxGUIHelper(camera, 'near', 'far', 0.1);
-    gui.add(minMaxGUIHelper, 'min', 0.1, 50, 0.1).name('near').onChange(updateCamera);
-    gui.add(minMaxGUIHelper, 'max', 0.1, 50, 0.1).name('far').onChange(updateCamera);
+
+
     const controls = new OrbitControls( camera, canvas );
     controls.target.set(0,0,0);
     controls.update();
@@ -166,7 +164,7 @@ function main() {
        
         return sphere;
     }
-    const spheres=[makeInstanceSphere(geometrysphere,0xffff00,-3,1,1)];
+    //const spheres=[makeInstanceSphere(geometrysphere,0xffff00,-3,1,1)];
     //cone stuff
     const geometrycone=new THREE.ConeGeometry(1,1,32,1);
     function makeInstanceCone(geometry, color, x,y,z) {
@@ -181,7 +179,7 @@ function main() {
        
         return cone;
     }
-    const cones=[makeInstanceCone(geometrycone,0xff00a4,3,1,1)];
+    //const cones=[makeInstanceCone(geometrycone,0xff00a4,3,1,1)];
 //importing 3d model
 
 const glbloader = new GLTFLoader();
@@ -522,34 +520,14 @@ const glbloader = new GLTFLoader();
   const intensity = 1;
   const light = new THREE.AmbientLight(color, intensity);
   scene.add(light);
-  gui.addColor(new ColorGUIHelper(light, 'color'), 'value').name('color');
-  gui.add(light, 'intensity', 0, 5, 0.01);
-  //directional light
-  function makeXYZGUI(gui, vector3, name, onChangeFn) {
-    const folder = gui.addFolder(name);
-    folder.add(vector3, 'x', -10, 10).onChange(onChangeFn);
-    folder.add(vector3, 'y', 0, 10).onChange(onChangeFn);
-    folder.add(vector3, 'z', -10, 10).onChange(onChangeFn);
-    folder.open();
-  }
   const dircolor = 0xffffff;
   const dirintensity = 3.5;
   const dirlight = new THREE.DirectionalLight(dircolor, dirintensity);
-  dirlight.position.set(-7.7,6.8,2.14);
-  dirlight.target.position.set(-5,0,9.02);
+  dirlight.position.set(-15,15,5);
+  dirlight.target.position.set(-25,0,12);
   scene.add(dirlight);
   scene.add(dirlight.target);
-  const dirhelper = new THREE.DirectionalLightHelper(dirlight);
-  scene.add(dirhelper);
-  function updateLight(){
-    dirlight.target.updateMatrixWorld();
-    dirhelper.update();
-  }
-  updateLight();
-  gui.addColor(new ColorGUIHelper(dirlight,'color'),'value').name('color');
-  gui.add(dirlight,'intensity',0,5,0.01);
-  makeXYZGUI(gui, dirlight.position, 'position', updateLight);
-  makeXYZGUI(gui, dirlight.target.position, 'target', updateLight);
+  
 
   //pointlight
   const pointcolor=0x0000ff;
@@ -557,15 +535,7 @@ const glbloader = new GLTFLoader();
   const pointlight=new THREE.PointLight(pointcolor, pointintensity);
   pointlight.position.set(-15,3,12);
   scene.add(pointlight);
-  const pointhelper = new THREE.PointLightHelper(pointlight);
-  scene.add(pointhelper);
-  function updatepointlight(){
-    pointhelper.update();
-  }
-    gui.addColor(new ColorGUIHelper(pointlight, 'color'), 'value').name('color');
-    gui.add(pointlight, 'intensity', 0, 150, 1);
-    gui.add(pointlight, 'distance', 0, 40).onChange(updatepointlight);
-    makeXYZGUI(gui, pointlight.position, 'position', updatepointlight);
+
     //background thing
   const backgroundloader = new THREE.TextureLoader();
   const backgroundtexture = backgroundloader.load(
@@ -605,18 +575,7 @@ const glbloader = new GLTFLoader();
           cube.rotation.x = rot;
           cube.rotation.y = rot;
     });
-        spheres.forEach((sphere, ndx) => {
-            const speed = 1 + ndx * .1;
-            const rot = time * speed;
-            sphere.rotation.x = rot;
-            sphere.rotation.y = rot;
-    });
-    cones.forEach((cone, ndx) => {
-        const speed = 1 + ndx * .1;
-        const rot = time * speed;
-        cone.rotation.x = rot;
-        cone.rotation.y = rot;
-    });
+   
     renderer.render(scene, camera);
     requestAnimationFrame(render);
 
